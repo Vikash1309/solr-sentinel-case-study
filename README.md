@@ -54,7 +54,7 @@ seconds of starting.
 
 ### Without Docker
 
-Needs Python 3.10+. On Windows you can double-click `start.bat` instead.
+Needs Python 3.10+.
 
 ```bash
 pip install -r requirements.txt

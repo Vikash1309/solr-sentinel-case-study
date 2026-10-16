@@ -1,6 +1,5 @@
-# LF everywhere (the code runs in Linux containers); CRLF only for the Windows launcher
+# LF everywhere: the code runs in Linux containers
 * text=auto eol=lf
-*.bat text eol=crlf
 *.png binary
 *.docx binary
 *.lock text eol=lf
