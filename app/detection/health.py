@@ -119,12 +119,15 @@ def _telemetry(node: str, last_seen: dict[tuple[str, str], float], now: datetime
 
 
 def _node_state(known: dict[str, Any], stale: list[str]) -> tuple[HealthState, int | None, str | None]:
-    """Missing telemetry makes a node Unknown, never healthy (a known bad state is kept)."""
+    """Missing telemetry makes a node Unknown, never healthy. A known bad state (and its score) is kept; an
+    Unknown node gets no score, because a score from partial telemetry would look like a clean bill of health."""
     if len(stale) == 2:
         return "unknown", None, "no telemetry from any source within the freshness window"
     if stale:
-        state: HealthState = known["state"] if known["state"] in ("degraded", "critical") else "unknown"
-        return state, known["score"], f"{', '.join(stale)} telemetry stale - health cannot be fully assessed"
+        reason = f"{', '.join(stale)} telemetry stale - health cannot be fully assessed"
+        if known["state"] in ("degraded", "critical"):
+            return known["state"], known["score"], reason
+        return "unknown", None, reason
     return known["state"], known["score"], None
 
 

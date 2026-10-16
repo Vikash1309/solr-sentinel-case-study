@@ -41,6 +41,8 @@ def test_stale_telemetry_is_unknown_not_healthy(analysed):
     ch = ClusterHealth.model_validate(repo.get("cluster_health"))
     n3 = ch.nodes["solr-node3"]
     assert n3.state == "unknown" and n3.heap_after_gc_pct is None          # no GC claim without GC telemetry
+    assert n3.score is None                                                # no health score for an Unknown node
+    assert not any("solr-node3 is unknown (score" in r for r in ch.reasons)
     assert ch.nodes["solr-node1"].state == "healthy"
 
 
