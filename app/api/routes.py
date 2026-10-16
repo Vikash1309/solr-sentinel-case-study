@@ -13,6 +13,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Request, UploadFile
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from ..ingestion.reader import save_upload
 from ..observability import METRICS
@@ -105,7 +106,8 @@ async def upload(request: Request, file: UploadFile = File(...), node_id: str = 
         _audit(request, key, "upload_rejected", node=repr(node_id)[:80], reason="invalid_input")
         raise HTTPException(400, str(e)) from None
     _audit(request, key, "upload", node=node_id, source=source_type, bytes=size, stored_as=path.name)
-    ov = run_analysis(ctx.repo, ctx.settings, ctx.rca)
+    # analysis is CPU-bound and takes seconds: run it off the event loop so health checks and other requests keep flowing
+    ov = await run_in_threadpool(run_analysis, ctx.repo, ctx.settings, ctx.rca)
     return {"stored_as": path.name, "node_id": node_id, "source_type": source_type, "analysis": ov}
 
 

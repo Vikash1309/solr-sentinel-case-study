@@ -120,3 +120,18 @@ def test_json_log_lines_are_valid_json():
     rec = logging.LogRecord("sentinel.test", logging.INFO, __file__, 1, "hello %s", ("world",), None)
     out = json.loads(JsonFormatter().format(rec))
     assert out["msg"] == "hello world" and out["level"] == "INFO" and out["logger"] == "sentinel.test"
+
+
+# ------------------------------------------------------------------------------------------ bounded evidence
+def test_evidence_package_caps_signals_and_keeps_ids_consistent(analysed):
+    from app.rca import evidence
+    s, repo = analysed
+    inc = main_incident(repo, s)
+    signals = {x.signal_id: x for x in repo.signals(s.cluster_id)}
+    s.llm_max_signals = 3
+    pack = evidence.for_model(evidence.build(inc, signals, repo.events_by_ids, repo.get("series"), None, s))
+    shown = {x["id"] for x in pack["signals"]}
+    assert len(shown) == 3 and inc.root_signal_id in shown
+    assert pack["incident"]["signals_omitted"] == len(inc.signal_ids) - 3
+    assert all(r["cause"] in shown and r["effect"] in shown for r in pack["relationships"])
+    assert all(set(r["signals"]) <= shown for r in pack["records"])   # the model is never shown an ID it may not cite

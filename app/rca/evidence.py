@@ -138,6 +138,12 @@ def build(inc: Incident, signals: dict[str, Signal], events_by_id, series, healt
     if pauses:
         counts["longest_gc_pause_ms"] = max(pauses)
     supported = sorted({IMPACT_STATEMENTS[m.signal_type] for m in members if m.signal_type in IMPACT_STATEMENTS})
+    # Bound the prompt: keep the root cause, then the most severe and earliest signals. Counts above still cover all.
+    shown = sorted(members, key=lambda x: (x.signal_id != inc.root_signal_id, -SEVERITY_RANK[x.severity], x.start))
+    shown = sorted(shown[:s.llm_max_signals], key=lambda x: x.start)
+    shown_ids = {m.signal_id for m in shown}
+    for r in records:   # records may only point at signals the model can see (and cite)
+        r["signals"] = [x for x in r["signals"] if x in shown_ids]
     contexts = sorted({c for m in members for c in m.metrics.get("cores", [])})
     missing = list(LOG_ONLY_LIMITATIONS)
     if health:
@@ -160,7 +166,8 @@ def build(inc: Incident, signals: dict[str, Signal], events_by_id, series, healt
                      "status": inc.status, "start": _iso(inc.first_seen), "end": _iso(inc.last_seen),
                      "duration_min": round((inc.last_seen - inc.first_seen).total_seconds() / 60, 1),
                      "affected_nodes": inc.nodes, "solr_context": contexts, "signal_count": len(members),
-                     "rule_engine_root_candidate": inc.root_signal_id},
+                     "rule_engine_root_candidate": inc.root_signal_id,
+                     **({"signals_omitted": len(members) - len(shown)} if len(shown) < len(members) else {})},
         "impact_summary": {"counts": counts, "supported_impact_statements": supported},
         "cluster_context": {
             "cluster_id": s.cluster_id,
@@ -174,8 +181,9 @@ def build(inc: Incident, signals: dict[str, Signal], events_by_id, series, healt
         "signals": [{"id": m.signal_id, "start": _iso(m.start), "end": _iso(m.end), "node": m.node_id, "type": m.signal_type,
                      "severity": m.severity, "title": m.title, "detail": m.detail, "metrics": m.metrics, "count": m.count,
                      "detected_by": m.method, **({"target_node": m.target_node} if m.target_node else {}),
-                     **({"root_candidate": True} if m.signal_id == inc.root_signal_id else {})} for m in members],
-        "relationships": [{"cause": l.cause, "effect": l.effect, "relation": l.relation, "reason": l.reason} for l in inc.links],
+                     **({"root_candidate": True} if m.signal_id == inc.root_signal_id else {})} for m in shown],
+        "relationships": [{"cause": l.cause, "effect": l.effect, "relation": l.relation, "reason": l.reason}
+                          for l in inc.links if l.cause in shown_ids and l.effect in shown_ids],
         "metrics": metric_summaries(series, inc),
         "records": [{k: v for k, v in r.items() if k != "event_ids"} for r in records],
         "hypotheses": hyps,

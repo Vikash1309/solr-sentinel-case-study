@@ -41,7 +41,7 @@ good evidence plus validation gets most of the benefit.
 
 ## What the model sees
 
-Never the raw logs. It gets a package of at most 25 items, each with an ID it has to cite:
+Never the raw logs. It gets a bounded package (by default at most 40 signals and 25 log records, always including the root cause), and every item has an ID it has to cite:
 
 | ID | What it is |
 |---|---|

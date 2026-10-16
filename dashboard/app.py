@@ -9,6 +9,7 @@ remediation; model/prompt version and analysis time; and the empty, parse-error,
 LLM-unavailable states."""
 from __future__ import annotations
 
+import html
 import json
 import os
 import time
@@ -68,8 +69,13 @@ def post_upload(node_id: str, source_type: str, name: str, content: bytes):
     return _req("POST", "/api/v1/logs/upload", b"".join(parts), {"content-type": f"multipart/form-data; boundary={boundary}"}, 300)
 
 
+def esc(v) -> str:
+    """Escape any value that came from logs, the API or the LLM before it goes into raw HTML."""
+    return html.escape(str(v), quote=True)
+
+
 def badge(text: str, color: str) -> str:
-    return f'<span class="badge" style="background:{color}">{text}</span>'
+    return f'<span class="badge" style="background:{color}">{esc(text)}</span>'
 
 
 def fmt(v, unit=""):
@@ -142,12 +148,12 @@ h1, h2 = st.columns([3, 2])
 with h1:
     st.markdown(f"## Solr Sentinel &nbsp; {badge('CLUSTER ' + state.upper(), STATE_COLOR[state])}"
                 + (badge("PARTIAL ASSESSMENT", "#5b6770") if health.get("partial") else ""), unsafe_allow_html=True)
-    st.markdown(f"<span class='muted'>Cluster <b>{health.get('cluster_id', '')}</b> · assessed at "
+    st.markdown(f"<span class='muted'>Cluster <b>{esc(health.get('cluster_id', ''))}</b> · assessed at "
                 f"<b>{hm(ov.get('assessed_at'))} UTC</b> ({ov.get('clock')} clock) · data {hm(ov['data_from'])}–{hm(ov['data_to'])} · "
                 f"{ov['events_total']:,} events · {ov['incidents']} incidents ({ov['open_incidents']} open)</span>",
                 unsafe_allow_html=True)
 with h2:
-    st.markdown(f"<div class='muted' style='text-align:right'>LLM <b>{ov['llm']}</b> · RCA queue {ov['rca_queue_depth']}"
+    st.markdown(f"<div class='muted' style='text-align:right'>LLM <b>{esc(ov['llm'])}</b> · RCA queue {ov['rca_queue_depth']}"
                 f" · analysis {ov.get('analysis_ms', '—')} ms · auth {'on' if ov.get('auth_enabled') else 'OFF (dev)'}</div>",
                 unsafe_allow_html=True)
 
@@ -169,7 +175,7 @@ if health.get("partial"):
         for r in health["partial_reasons"]:
             st.markdown(f"- {r}")
 if health.get("reasons"):
-    st.markdown(" · ".join(f"<span class='muted'>{r}</span>" for r in health["reasons"][:4]), unsafe_allow_html=True)
+    st.markdown(" · ".join(f"<span class='muted'>{esc(r)}</span>" for r in health["reasons"][:4]), unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------------------------- node cards
 cols = st.columns(max(1, len(nodes_all)))
@@ -177,13 +183,13 @@ for col, nid in zip(cols, nodes_all, strict=True):
     n = health["nodes"][nid]
     tel = " ".join(badge(f"{t['source_type']} {'stale' if t['stale'] else 'ok'}", "#7b8794" if t["stale"] else "#2e8b57")
                    for t in n["telemetry"])
-    reps = ", ".join(f"{c.replace('products_', '')}: {s}" for c, s in sorted(n["replicas"].items()))
+    reps = ", ".join(f"{esc(c.replace('products_', ''))}: {esc(s)}" for c, s in sorted(n["replicas"].items()))
     col.markdown(f"""<div class='card' style='border-left:5px solid {STATE_COLOR[n['state']]}'>
-<div style='display:flex;justify-content:space-between'><div><b style='font-family:monospace'>{nid}</b><br>{badge(n['state'].upper(), STATE_COLOR[n['state']])}</div>
+<div style='display:flex;justify-content:space-between'><div><b style='font-family:monospace'>{esc(nid)}</b><br>{badge(n['state'].upper(), STATE_COLOR[n['state']])}</div>
 <div class='big'>{'?' if n['score'] is None or n['state'] == 'unknown' else n['score']}<span class='muted'>/100</span></div></div>
 <div class='kv'>Heap after GC <b>{fmt(n['heap_after_gc_pct'], '%')}</b> · Max GC pause <b>{fmt(n['max_gc_pause_ms_5m'], ' ms')}</b><br>
 GC overhead <b>{fmt(n['gc_overhead_pct_5m'], '%')}</b> · p95 <b>{fmt(n['p95_qtime_ms_5m'], ' ms')}</b> · errors <b>{fmt(n['errors_5m'])}</b><br>
-Leader of <b>{', '.join(n['leader_of']) or '—'}</b><br><span class='muted'>{reps}</span><br>{tel}</div></div>""",
+Leader of <b>{esc(', '.join(n['leader_of'])) or '—'}</b><br><span class='muted'>{reps}</span><br>{tel}</div></div>""",
                  unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------------------------- health timeline
@@ -232,17 +238,17 @@ with t_inc:
         st.markdown(f"### {inc['title']}")
         meta = (badge(inc["severity"].upper(), SEV_COLOR[inc["severity"]]) + badge(inc["status"], "#5b6770") +
                 (badge("recurrence of " + inc["recurrence_of"], "#8a5cc2") if inc.get("recurrence_of") else ""))
-        st.markdown(meta + f"<span class='muted'>Severity by policy: {inc['severity_reason']} · "
-                    f"{hm(inc['first_seen'])}–{hm(inc['last_seen'])} UTC · nodes {', '.join(inc['nodes'])}</span>",
+        st.markdown(meta + f"<span class='muted'>Severity by policy: {esc(inc['severity_reason'])} · "
+                    f"{hm(inc['first_seen'])}–{hm(inc['last_seen'])} UTC · nodes {esc(', '.join(inc['nodes']))}</span>",
                     unsafe_allow_html=True)
         if not rca:
             st.info(f"RCA status: **{inc['rca_status']}** - the incident and its evidence are available below while the RCA runs.")
         else:
             src = "AI RCA" if rca["source"] == "llm" else "Deterministic RCA"
-            st.markdown(f"<span class='muted'>{src} · version {rca['version']} ({rca['trigger']}) · model "
-                        f"<b>{rca['model'] or '—'}</b> · prompt <b>{rca['prompt_version']}</b> · "
-                        f"{rca['created_at'][:19].replace('T', ' ')} UTC"
-                        + (f" · AI RCA not used: <b>{rca['reason'].replace('_', ' ')}</b>" if rca.get("reason") else "")
+            st.markdown(f"<span class='muted'>{src} · version {esc(rca['version'])} ({esc(rca['trigger'])}) · model "
+                        f"<b>{esc(rca['model'] or '—')}</b> · prompt <b>{esc(rca['prompt_version'])}</b> · "
+                        f"{esc(rca['created_at'][:19].replace('T', ' '))} UTC"
+                        + (f" · AI RCA not used: <b>{esc(rca['reason'].replace('_', ' '))}</b>" if rca.get("reason") else "")
                         + "</span>", unsafe_allow_html=True)
         rc1, rc2, rc3 = st.columns([1, 1, 2])
         model_override = rc2.text_input("Model override (optional)", "", label_visibility="collapsed",

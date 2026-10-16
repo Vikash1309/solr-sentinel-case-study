@@ -73,7 +73,8 @@ class Settings:
     llm_timeout_s: int = 90
     llm_min_severity: str = "warning"                         # below this: deterministic RCA only (cost control)
     llm_strong_min_severity: str = "critical"
-    llm_max_evidence_items: int = 25
+    llm_max_evidence_items: int = 25                           # representative log records sent to the model
+    llm_max_signals: int = 40                                  # signals sent to the model (root cause always kept)
     rca_workers: int = 1                                       # bounded RCA concurrency
     rca_retry_base_s: int = 300                                # provider outage: retry after 5, 10, 20, 40 min ...
     rca_retry_max: int = 4                                     # ... then keep the rules-based RCA
@@ -114,7 +115,7 @@ def validate(s: Settings) -> list[str]:
         if getattr(s, name) not in allowed:
             errors.append(f"{name}={getattr(s, name)!r} must be one of {', '.join(allowed)}")
     for name in ("poll_interval_s", "rca_workers", "rca_retry_base_s", "max_upload_mb", "reanalyze_per_minute",
-                 "llm_timeout_s", "llm_max_evidence_items", "analysis_lookback_hours", "metric_window_s"):
+                 "llm_timeout_s", "llm_max_evidence_items", "llm_max_signals", "analysis_lookback_hours", "metric_window_s"):
         if getattr(s, name) <= 0:
             errors.append(f"{name} must be greater than 0")
     if s.env == "production":
