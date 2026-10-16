@@ -2,7 +2,8 @@
 Synthetic SolrCloud + JVM G1 GC log generator.
 
 Produces one hour of realistic logs for a 3-node SolrCloud cluster
-(collection `products`, 2 shards x 3 replicas) with three embedded scenarios:
+(collection `products`, 2 shards x 3 replicas) with four embedded scenarios (any subset can be
+generated with --scenarios; --scenarios none gives a control run with background traffic only):
 
   1. 10:10-10:14  solr-node3  Commit storm: a bulk indexer sends commit=true on every
                               batch -> overlapping searchers -> maxWarmingSearchers errors.
@@ -39,6 +40,8 @@ MINUTES = 60
 HEAP_MAX = 8192  # MB  (-Xmx8g)
 JVM_START = START - timedelta(hours=6)
 NODES = ["solr-node1", "solr-node2", "solr-node3"]
+# Planted problems. Any subset can be generated; the empty set is a control run (background traffic only).
+ALL_SCENARIOS = frozenset({"S1", "S2", "S3", "S4"})
 
 # collection layout: (shard, core_node, core_name, node)
 REPLICAS = [
@@ -74,7 +77,11 @@ def fmt_gc(ts, level, tags, msg):
 
 
 class Sim:
-    def __init__(self, seed=42):
+    def __init__(self, seed=42, scenarios=ALL_SCENARIOS):
+        unknown = set(scenarios) - ALL_SCENARIOS
+        if unknown:
+            raise ValueError(f"unknown scenarios: {sorted(unknown)}")
+        self.scenarios = frozenset(scenarios)
         self.rng = random.Random(seed)
         self.out = {n: {"solr": [], "gc": []} for n in NODES}
         self.gcid = {n: 4100 + i * 37 for i, n in enumerate(NODES)}
@@ -140,86 +147,104 @@ class Sim:
                       "end_commit_flush")
 
     # ------------------------------------------------------------------ scenario predicates
-    @staticmethod
-    def heavy_reporting(node, t):  # t in minutes
-        return node == "solr-node2" and (18 <= t < 42 or 55 <= t < 60)
+    # Each check of a scenario comes before any random draw it guards, so generating all scenarios
+    # consumes the random stream exactly as before and the output is byte-identical per seed.
+    def on(self, scenario: str) -> bool:
+        return scenario in self.scenarios
 
-    @staticmethod
-    def commit_storm(node, t):
-        return node == "solr-node3" and 10 <= t < 14.3
+    def heavy_reporting(self, node, t):  # t in minutes
+        return node == "solr-node2" and ((self.on("S2") and 18 <= t < 42) or (self.on("S3") and 55 <= t < 60))
 
-    @staticmethod
-    def node2_stalled(t):  # inside the 18.2 s full GC at 38:05 or ZK-disconnected window
-        return 38 + 5 / 60 <= t < 38 + 24 / 60
+    def commit_storm(self, node, t):
+        return self.on("S1") and node == "solr-node3" and 10 <= t < 14.3
+
+    def node2_stalled(self, t):  # inside the 18.2 s full GC at 38:05 or ZK-disconnected window
+        return self.on("S2") and 38 + 5 / 60 <= t < 38 + 24 / 60
 
     # ------------------------------------------------------------------ main generation
     def traffic(self):
-        rng = self.rng
+        # Per node, in this order: user selects, heavy reporting queries, updates, soft commits. The order matters:
+        # it fixes how the random stream is consumed, so a seed always produces the same logs.
         for node in NODES:
-            t = 0.0
-            while t < MINUTES:
-                rate = 1.1  # selects per second
-                if node == "solr-node1" and 38.4 <= t < 45:
-                    rate = 1.6  # takes over traffic + shard1 leadership
-                t += rng.expovariate(rate) / 60
-                if t >= MINUTES:
-                    break
-                ts = m(t)
-                if node == "solr-node2" and self.node2_stalled(t):
-                    continue  # JVM is paused/disconnected: no request lines are logged
-                q = int(rng.lognormvariate(math.log(22), 0.6))
-                if self.commit_storm(node, t):
-                    q = int(q * rng.uniform(4, 14))  # caches thrown away on every new searcher
-                if node == "solr-node2" and 18 <= t < 43:
-                    q = int(q * (1 + (min(t, 38) - 18) / 6))  # GC pauses inflate latency
-                if node == "solr-node1" and 38.4 <= t < 45:
-                    q = int(q * 2.2)
-                if node == "solr-node2" and 55 <= t:
-                    q = int(q * 1.8)
-                status = 0
-                # node1/node3 distributed queries fan out to node2 and time out while it is stalled
-                if node != "solr-node2" and (34.5 <= t < 38.5) and rng.random() < (0.55 if t >= 38 + 5 / 60 else 0.12):
-                    self.remote_timeout(node, ts, "select")
-                    continue
-                self.select_line(node, ts, max(q, 1), status=status)
+            self._selects(node)
+            self._heavy_queries(node)
+            self._updates(node)
+            self._soft_commits(node)
 
-                # heavy reporting queries pinned to node2
-            t = 0.0
-            while node == "solr-node2" and t < MINUTES:
-                t += rng.expovariate(0.25) / 60
-                if t >= MINUTES:
-                    break
-                if self.heavy_reporting(node, t) and not self.node2_stalled(t):
-                    self.select_line(node, m(t), rng.randint(1400, 7800), heavy=True)
+    def _select_qtime(self, node, t):
+        rng = self.rng
+        q = int(rng.lognormvariate(math.log(22), 0.6))
+        if self.commit_storm(node, t):
+            q = int(q * rng.uniform(4, 14))  # caches thrown away on every new searcher
+        if self.on("S2") and node == "solr-node2" and 18 <= t < 43:
+            q = int(q * (1 + (min(t, 38) - 18) / 6))  # GC pauses inflate latency
+        if self.on("S2") and node == "solr-node1" and 38.4 <= t < 45:
+            q = int(q * 2.2)
+        if self.on("S3") and node == "solr-node2" and 55 <= t:
+            q = int(q * 1.8)
+        return q
 
-            # updates
-            t = 0.0
-            while t < MINUTES:
-                storm = self.commit_storm(node, t)
-                t += rng.expovariate(1.2 if storm else 0.3) / 60
-                if t >= MINUTES:
-                    break
-                ts = m(t)
-                if node == "solr-node2" and self.node2_stalled(t):
-                    continue
-                if storm and rng.random() < 0.85:
-                    self.commit_storm_update(node, ts)
-                    continue
-                # updates for shard1 arriving at node3 while there is no shard1 leader
-                if node == "solr-node3" and 38 + 6 / 60 <= t < 38 + 27 / 60 and rng.random() < 0.8:
-                    self.no_leader(node, ts)
-                    continue
-                if node != "solr-node2" and 35 <= t < 38.4 and rng.random() < 0.15:
-                    self.distrib_update_timeout(node, ts)
-                    continue
-                self.update_line(node, ts, rng.randint(15, 70))
+    def _selects(self, node):
+        rng = self.rng
+        t = 0.0
+        while t < MINUTES:
+            rate = 1.1  # selects per second
+            if self.on("S2") and node == "solr-node1" and 38.4 <= t < 45:
+                rate = 1.6  # takes over traffic + shard1 leadership
+            t += rng.expovariate(rate) / 60
+            if t >= MINUTES:
+                break
+            ts = m(t)
+            if node == "solr-node2" and self.node2_stalled(t):
+                continue  # JVM is paused/disconnected: no request lines are logged
+            q = self._select_qtime(node, t)
+            # node1/node3 distributed queries fan out to node2 and time out while it is stalled
+            if self.on("S2") and node != "solr-node2" and (34.5 <= t < 38.5) and rng.random() < (0.55 if t >= 38 + 5 / 60 else 0.12):
+                self.remote_timeout(node, ts, "select")
+                continue
+            self.select_line(node, ts, max(q, 1), status=0)
 
-            # soft commits every 60s (staggered)
-            off = {"solr-node1": 7, "solr-node2": 23, "solr-node3": 41}[node]
-            for minute in range(MINUTES):
-                if node == "solr-node2" and minute == 38:
-                    continue
-                self.soft_commit(node, START + timedelta(minutes=minute, seconds=off))
+    def _heavy_queries(self, node):
+        # heavy reporting queries pinned to node2 (the random draws happen even when no scenario uses them)
+        rng = self.rng
+        t = 0.0
+        while node == "solr-node2" and t < MINUTES:
+            t += rng.expovariate(0.25) / 60
+            if t >= MINUTES:
+                break
+            if self.heavy_reporting(node, t) and not self.node2_stalled(t):
+                self.select_line(node, m(t), rng.randint(1400, 7800), heavy=True)
+
+    def _updates(self, node):
+        rng = self.rng
+        t = 0.0
+        while t < MINUTES:
+            storm = self.commit_storm(node, t)
+            t += rng.expovariate(1.2 if storm else 0.3) / 60
+            if t >= MINUTES:
+                break
+            ts = m(t)
+            if node == "solr-node2" and self.node2_stalled(t):
+                continue
+            if storm and rng.random() < 0.85:
+                self.commit_storm_update(node, ts)
+                continue
+            # updates for shard1 arriving at node3 while there is no shard1 leader
+            if self.on("S2") and node == "solr-node3" and 38 + 6 / 60 <= t < 38 + 27 / 60 and rng.random() < 0.8:
+                self.no_leader(node, ts)
+                continue
+            if self.on("S2") and node != "solr-node2" and 35 <= t < 38.4 and rng.random() < 0.15:
+                self.distrib_update_timeout(node, ts)
+                continue
+            self.update_line(node, ts, rng.randint(15, 70))
+
+    def _soft_commits(self, node):
+        # soft commits every 60s (staggered)
+        off = {"solr-node1": 7, "solr-node2": 23, "solr-node3": 41}[node]
+        for minute in range(MINUTES):
+            if self.on("S2") and node == "solr-node2" and minute == 38:
+                continue
+            self.soft_commit(node, START + timedelta(minutes=minute, seconds=off))
 
     def remote_timeout(self, node, ts, kind):
         rng = self.rng
@@ -280,6 +305,8 @@ class Sim:
 
     # ------------------------------------------------------------------ cluster events (scenario 2)
     def cluster_events(self):
+        if not self.on("S2"):
+            return
         rng = self.rng
         n1, n2, n3 = NODES
         # warnings before the stall: node2 heap pressure visible to Solr circuit breaker
@@ -347,119 +374,143 @@ class Sim:
         """Heap occupancy after young GC (% of max) as a function of time."""
         base = 33 + 11 * ((t + NODES.index(node) * 2.3) % 6.5) / 6.5  # mixed-GC sawtooth 33-44 %
         if node != "solr-node2":
-            if node == "solr-node3" and 10 <= t < 14.5:
+            if self.on("S1") and node == "solr-node3" and 10 <= t < 14.5:
                 return base + 6
             return base
-        if t < 18:
+        s2, s3 = self.on("S2"), self.on("S3")
+        if t < 18 or (not s2 and t < 55):
             return base
-        if t < 32:
+        if s2 and t < 32:
             return 44 + (88 - 44) * (t - 18) / 14
-        if t < 38.1:
+        if s2 and t < 38.1:
             return 88 + (95 - 88) * (t - 32) / 6.1
-        if t < 42.5:
+        if s2 and t < 42.5:
             return 92 + self.rng.uniform(-1, 1.5)
-        if t < 55:
-            return 41 + 6 * (t - 42.5) / 12.5
+        if t < 55 or not s3:
+            return 41 + 6 * (t - 42.5) / 12.5 if s2 else base
         return 47 + (87 - 47) * (t - 55) / 4.7
 
+    # scripted stop-the-world events on node2: (minute, kind, before, after, pause_ms)
+    SCRIPTED_GC = {
+        "solr-node2": [
+            (31 + 10 / 60, "evac", 7930, 8040, 912.4),
+            (32.0, "full", 8150, 7220, 3842.7),
+            (33 + 40 / 60, "evac", 8020, 8110, 1204.9),
+            (34.5, "full", 8170, 7390, 6218.3),
+            (36 + 10 / 60, "full", 8180, 7480, 9531.6),
+            (38 + 5 / 60, "full", 8188, 7560, 18234.6),
+            (40 + 2 / 60, "evac", 8050, 8120, 1488.0),
+            (42.5, "full", 7980, 3390, 7104.2),
+            (59.0, "young_long", 7300, 7090, 1312.5),
+        ]
+    }
+
     def gc_logs(self):
-        rng = self.rng
-        # scripted stop-the-world events on node2: (minute, kind, before, after, pause_ms)
-        scripted = {
-            "solr-node2": [
-                (31 + 10 / 60, "evac", 7930, 8040, 912.4),
-                (32.0, "full", 8150, 7220, 3842.7),
-                (33 + 40 / 60, "evac", 8020, 8110, 1204.9),
-                (34.5, "full", 8170, 7390, 6218.3),
-                (36 + 10 / 60, "full", 8180, 7480, 9531.6),
-                (38 + 5 / 60, "full", 8188, 7560, 18234.6),
-                (40 + 2 / 60, "evac", 8050, 8120, 1488.0),
-                (42.5, "full", 7980, 3390, 7104.2),
-                (59.0, "young_long", 7300, 7090, 1312.5),
-            ]
-        }
         for node in NODES:
-            # header
-            hdr_ts = START - timedelta(seconds=1)
-            for line in ["Using G1", "Version: 17.0.12+7 (release)", "CPUs: 16 total, 16 available",
-                         "Memory: 31G", "Heap Region Size: 4M", "Heap Min Capacity: 8G",
-                         "Heap Initial Capacity: 8G", "Heap Max Capacity: 8G", "Pre-touch: Disabled"]:
-                self.gc(node, hdr_ts, "gc,init", line)
-            events = []
-            t = 0.0
-            while t < MINUTES:
-                heavy = self.heavy_reporting(node, t)
-                gap = rng.uniform(3, 5.5) if heavy else rng.uniform(9, 14)
-                if self.commit_storm(node, t):
-                    gap = rng.uniform(6, 8)
-                t += gap / 60
-                if t < MINUTES:
-                    events.append((t, "young", None, None, None))
-            # concurrent cycles roughly every 6.5 minutes
-            for k in range(10):
-                events.append((((k * 6.5) + NODES.index(node) * 2.3 + 6.3) % MINUTES, "concurrent", None, None, None))
-            for ev in scripted.get(node, []):
-                events.append(ev)
-            events.sort(key=lambda e: e[0])
-            # remove young GCs that would fall inside a scripted long pause
-            blocked = [(e[0], e[0] + e[4] / 60000) for e in events if e[1] in ("full", "evac", "young_long")]
+            self._gc_header(node)
             last_after = None
-            for (t, kind, before, after, pause) in events:
-                if kind == "young" and any(a - 0.05 <= t <= b + 0.05 for a, b in blocked):
-                    continue
-                gid = self.gcid[node]
-                self.gcid[node] += 1
-                ts = m(t)
+            for (t, kind, before, after, pause) in self._gc_schedule(node):
                 if kind == "concurrent":
-                    self.gc(node, ts, "gc", f"GC({gid}) Concurrent Mark Cycle")
-                    dur = rng.uniform(300, 900) * (2.5 if node == "solr-node2" and 25 <= t < 43 else 1)
-                    end = ts + timedelta(milliseconds=dur)
-                    remark_at = ts + timedelta(milliseconds=dur * 0.8)
-                    h = int(self.heap_target_pct(node, t) * HEAP_MAX / 100)
-                    self.gc(node, remark_at, "gc", f"GC({gid}) Pause Remark {h}M->{h - rng.randint(5, 60)}M({HEAP_MAX}M) {rng.uniform(3, 18):.3f}ms")
-                    self.gc(node, end, "gc", f"GC({gid}) Concurrent Mark Cycle {dur:.3f}ms")
-                    continue
-                if kind == "young":
-                    pct = self.heap_target_pct(node, t)
-                    after = int(pct * HEAP_MAX / 100 + rng.uniform(-60, 60))
-                    eden = max(250, min(3000, HEAP_MAX - after - 300))
-                    before = min(HEAP_MAX - 10, after + int(eden * rng.uniform(0.9, 1.0)))
-                    pressure = max(0.0, (pct - 50) / 45)
-                    pause = rng.uniform(18, 55) + pressure * rng.uniform(150, 420)
-                    if self.commit_storm(node, t):
-                        pause *= 1.6
-                    humongous = self.heavy_reporting(node, t) and rng.random() < 0.35
-                    mixed = (not humongous) and rng.random() < 0.08
-                    label = ("Pause Young (Concurrent Start) (G1 Humongous Allocation)" if humongous
-                             else "Pause Young (Mixed) (G1 Evacuation Pause)" if mixed
-                             else "Pause Young (Normal) (G1 Evacuation Pause)")
-                elif kind == "evac":
-                    label = "Pause Young (Normal) (G1 Evacuation Pause)"
-                elif kind == "young_long":
-                    label = "Pause Young (Concurrent Start) (G1 Humongous Allocation)"
+                    self._gc_concurrent(node, t)
                 else:
-                    label = "Pause Full (G1 Compaction Pause)"
-                end = ts + timedelta(milliseconds=pause)
-                self.gc(node, ts, "gc,start", f"GC({gid}) {label}")
-                if kind != "full":
-                    self.gc(node, ts + timedelta(milliseconds=1), "gc,task", f"GC({gid}) Using 16 workers of 16 for evacuation")
-                if kind == "evac":
-                    self.gc(node, end - timedelta(milliseconds=2), "gc", f"GC({gid}) To-space exhausted")
-                if kind == "full":
-                    for phase, frac in (("Phase 1: Mark live objects", 0.45), ("Phase 2: Prepare for compaction", 0.15),
-                                        ("Phase 3: Adjust pointers", 0.2), ("Phase 4: Compact heap", 0.2)):
-                        self.gc(node, ts + timedelta(milliseconds=pause * frac), "gc,phases", f"GC({gid}) {phase} {pause * frac:.3f}ms")
-                eden_after = 0
-                self.gc(node, end, "gc,heap", f"GC({gid}) Eden regions: {max(1, (before - (last_after or after)) // 4)}->{eden_after}")
-                self.gc(node, end, "gc,heap", f"GC({gid}) Humongous regions: {rng.randint(2, 9) if not self.heavy_reporting(node, t) else rng.randint(60, 240)}->{rng.randint(0, 8)}")
-                self.gc(node, end, "gc", f"GC({gid}) {label} {before}M->{after}M({HEAP_MAX}M) {pause:.3f}ms")
-                self.gc(node, end, "gc,cpu", f"GC({gid}) User={pause * 12 / 1000:.2f}s Sys={pause * 0.4 / 1000:.2f}s Real={pause / 1000:.2f}s")
-                last_after = after
+                    last_after = self._gc_pause(node, t, kind, before, after, pause, last_after)
+
+    def _gc_header(self, node):
+        hdr_ts = START - timedelta(seconds=1)
+        for line in ["Using G1", "Version: 17.0.12+7 (release)", "CPUs: 16 total, 16 available",
+                     "Memory: 31G", "Heap Region Size: 4M", "Heap Min Capacity: 8G",
+                     "Heap Initial Capacity: 8G", "Heap Max Capacity: 8G", "Pre-touch: Disabled"]:
+            self.gc(node, hdr_ts, "gc,init", line)
+
+    def _gc_schedule(self, node):
+        """Young GCs at a workload-dependent rate, concurrent cycles, and the scripted long pauses, in time order.
+        Young GCs that would fall inside a scripted long pause are dropped."""
+        rng = self.rng
+        events = []
+        t = 0.0
+        while t < MINUTES:
+            heavy = self.heavy_reporting(node, t)
+            gap = rng.uniform(3, 5.5) if heavy else rng.uniform(9, 14)
+            if self.commit_storm(node, t):
+                gap = rng.uniform(6, 8)
+            t += gap / 60
+            if t < MINUTES:
+                events.append((t, "young", None, None, None))
+        # concurrent cycles roughly every 6.5 minutes
+        for k in range(10):
+            events.append((((k * 6.5) + NODES.index(node) * 2.3 + 6.3) % MINUTES, "concurrent", None, None, None))
+        for ev in self.SCRIPTED_GC.get(node, []):
+            if self.on("S3" if ev[0] >= 55 else "S2"):   # the 10:59 pause belongs to the recurrence
+                events.append(ev)
+        events.sort(key=lambda e: e[0])
+        blocked = [(e[0], e[0] + e[4] / 60000) for e in events if e[1] in ("full", "evac", "young_long")]
+        return [e for e in events if not (e[1] == "young" and any(a - 0.05 <= e[0] <= b + 0.05 for a, b in blocked))]
+
+    def _next_gc_id(self, node):
+        gid = self.gcid[node]
+        self.gcid[node] += 1
+        return gid
+
+    def _gc_concurrent(self, node, t):
+        rng = self.rng
+        gid = self._next_gc_id(node)
+        ts = m(t)
+        self.gc(node, ts, "gc", f"GC({gid}) Concurrent Mark Cycle")
+        dur = rng.uniform(300, 900) * (2.5 if self.on("S2") and node == "solr-node2" and 25 <= t < 43 else 1)
+        end = ts + timedelta(milliseconds=dur)
+        remark_at = ts + timedelta(milliseconds=dur * 0.8)
+        h = int(self.heap_target_pct(node, t) * HEAP_MAX / 100)
+        self.gc(node, remark_at, "gc", f"GC({gid}) Pause Remark {h}M->{h - rng.randint(5, 60)}M({HEAP_MAX}M) {rng.uniform(3, 18):.3f}ms")
+        self.gc(node, end, "gc", f"GC({gid}) Concurrent Mark Cycle {dur:.3f}ms")
+
+    def _young_gc(self, node, t):
+        """Sizes, pause and label of a regular young GC at minute t."""
+        rng = self.rng
+        pct = self.heap_target_pct(node, t)
+        after = int(pct * HEAP_MAX / 100 + rng.uniform(-60, 60))
+        eden = max(250, min(3000, HEAP_MAX - after - 300))
+        before = min(HEAP_MAX - 10, after + int(eden * rng.uniform(0.9, 1.0)))
+        pressure = max(0.0, (pct - 50) / 45)
+        pause = rng.uniform(18, 55) + pressure * rng.uniform(150, 420)
+        if self.commit_storm(node, t):
+            pause *= 1.6
+        humongous = self.heavy_reporting(node, t) and rng.random() < 0.35
+        mixed = (not humongous) and rng.random() < 0.08
+        label = ("Pause Young (Concurrent Start) (G1 Humongous Allocation)" if humongous
+                 else "Pause Young (Mixed) (G1 Evacuation Pause)" if mixed
+                 else "Pause Young (Normal) (G1 Evacuation Pause)")
+        return before, after, pause, label
+
+    def _gc_pause(self, node, t, kind, before, after, pause, last_after):
+        rng = self.rng
+        gid = self._next_gc_id(node)
+        ts = m(t)
+        if kind == "young":
+            before, after, pause, label = self._young_gc(node, t)
+        else:
+            label = {"evac": "Pause Young (Normal) (G1 Evacuation Pause)",
+                     "young_long": "Pause Young (Concurrent Start) (G1 Humongous Allocation)"}.get(kind, "Pause Full (G1 Compaction Pause)")
+        end = ts + timedelta(milliseconds=pause)
+        self.gc(node, ts, "gc,start", f"GC({gid}) {label}")
+        if kind != "full":
+            self.gc(node, ts + timedelta(milliseconds=1), "gc,task", f"GC({gid}) Using 16 workers of 16 for evacuation")
+        if kind == "evac":
+            self.gc(node, end - timedelta(milliseconds=2), "gc", f"GC({gid}) To-space exhausted")
+        if kind == "full":
+            for phase, frac in (("Phase 1: Mark live objects", 0.45), ("Phase 2: Prepare for compaction", 0.15),
+                                ("Phase 3: Adjust pointers", 0.2), ("Phase 4: Compact heap", 0.2)):
+                self.gc(node, ts + timedelta(milliseconds=pause * frac), "gc,phases", f"GC({gid}) {phase} {pause * frac:.3f}ms")
+        self.gc(node, end, "gc,heap", f"GC({gid}) Eden regions: {max(1, (before - (last_after or after)) // 4)}->0")
+        self.gc(node, end, "gc,heap", f"GC({gid}) Humongous regions: {rng.randint(2, 9) if not self.heavy_reporting(node, t) else rng.randint(60, 240)}->{rng.randint(0, 8)}")
+        self.gc(node, end, "gc", f"GC({gid}) {label} {before}M->{after}M({HEAP_MAX}M) {pause:.3f}ms")
+        self.gc(node, end, "gc,cpu", f"GC({gid}) User={pause * 12 / 1000:.2f}s Sys={pause * 0.4 / 1000:.2f}s Real={pause / 1000:.2f}s")
+        return after
 
     def telemetry_and_malformed(self):
         # scenario 4: node3's GC log shipping stops at 10:47
-        cut = m(47)
-        self.out["solr-node3"]["gc"] = [(ts, l) for ts, l in self.out["solr-node3"]["gc"] if ts < cut]
+        if self.on("S4"):
+            cut = m(47)
+            self.out["solr-node3"]["gc"] = [(ts, l) for ts, l in self.out["solr-node3"]["gc"] if ts < cut]
         # malformed records: a partial write in node1's solr.log and JVM warnings inside node2's gc.log
         self.out["solr-node1"]["solr"].append((m(25 + 13.4 / 60), "2026-10-15 10:25:13.4"))
         self.out["solr-node1"]["solr"].append((m(25 + 13.41 / 60), "2026-10-15 10:25:13.412 INFO  (qtp1489193907-77) [c:products s:shard1"))
@@ -499,8 +550,11 @@ def main():
     ap.add_argument("--simulate", action="store_true", help="write logs progressively to mimic periodic arrival")
     ap.add_argument("--batch-minutes", type=float, default=5, help="log minutes written per batch (simulate)")
     ap.add_argument("--interval", type=float, default=10, help="seconds between batches (simulate)")
+    ap.add_argument("--scenarios", default="S1,S2,S3,S4",
+                    help="planted problems to include, comma-separated; 'none' writes a control run with background traffic only")
     a = ap.parse_args()
-    data = Sim(a.seed).generate()
+    chosen = set() if a.scenarios.strip().lower() == "none" else {x.strip() for x in a.scenarios.split(",") if x.strip()}
+    data = Sim(a.seed, chosen).generate()
     if not a.simulate:
         write_all(a.out, data)
         total = sum(len(v) for k in data.values() for v in k.values())

@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Optional
 
-from ..schemas import Incident, LogEvent, ParseErrorRecord, RCARecord, Signal
+from ..schemas import Incident, LogEvent, ParseErrorRecord, RCARecord, RCAState, Signal
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS events (
@@ -169,7 +169,7 @@ class Repository:
                  inc.last_seen.isoformat(), inc.model_dump_json(), cur[1] if cur else _now(), _now()))
             return cur is None
 
-    def set_rca_state(self, incident_id: str, status: str, version: int | None = None):
+    def set_rca_state(self, incident_id: str, status: RCAState, version: int | None = None):
         with self._lock, self.conn:
             r = self.conn.execute("SELECT data FROM incidents WHERE incident_id=?", (incident_id,)).fetchone()
             if not r:

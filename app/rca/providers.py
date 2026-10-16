@@ -24,11 +24,12 @@ import os
 import time
 import urllib.error
 import urllib.request
+from typing import Any
 
 from ..config import SEVERITY_RANK
 from ..config import Settings as Config
 
-PRESETS = {
+PRESETS: dict[str, dict[str, Any]] = {
     "bedrock": {"kind": "bedrock", "base": "", "key_env": None, "model": "", "key_optional": True},
     "anthropic": {"kind": "anthropic", "base": "https://api.anthropic.com", "key_env": "ANTHROPIC_API_KEY", "model": "claude-sonnet-5-5"},
     "gemini": {"kind": "openai", "base": "https://generativelanguage.googleapis.com/v1beta/openai", "key_env": "GEMINI_API_KEY", "model": "gemini-3.8-flash"},
@@ -73,7 +74,7 @@ class LLMClient:
         preset = PRESETS.get(self.provider)
         self.kind = preset["kind"] if preset else None
         if self.provider == "bedrock":
-            preset = dict(preset, model=os.getenv("BEDROCK_MODEL_ID", ""), model_strong=os.getenv("BEDROCK_MODEL_ID_STRONG", ""))
+            preset = dict(preset or {}, model=os.getenv("BEDROCK_MODEL_ID", ""), model_strong=os.getenv("BEDROCK_MODEL_ID_STRONG", ""))
         self.model = model or cfg.llm_model or (preset["model"] if preset else "")
         # strong tier for high-severity incidents; defaults to the same model when no tier is configured
         self.model_strong = (model or cfg.llm_model_strong or (preset or {}).get("model_strong") or self.model)

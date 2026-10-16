@@ -10,8 +10,8 @@ target-version = "py310"
 extend-exclude = ["sample_data"]
 
 [tool.ruff.lint]
-# pyflakes, pycodestyle errors, import sorting, bugbear (likely bugs), bandit (security)
-select = ["F", "E", "W", "I", "B", "S"]
+# pyflakes, pycodestyle errors, import sorting, bugbear (likely bugs), bandit (security), complexity
+select = ["F", "E", "W", "I", "B", "S", "C90"]
 ignore = [
   "E501",   # long lines are mostly log-line fixtures and messages; readability is handled in review
   "E741",   # single-letter names like `l` in short comprehensions
@@ -23,8 +23,18 @@ ignore = [
   "B008",   # FastAPI Depends()/File() in defaults is the framework's idiom
 ]
 
+[tool.ruff.lint.mccabe]
+max-complexity = 15   # no function may grow past this; the most complex ones were split to get under it
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S105", "S106", "S108"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

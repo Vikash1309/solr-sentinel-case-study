@@ -43,6 +43,9 @@ jobs:
       - name: Lint
         run: ruff check .
 
+      - name: Type check
+        run: mypy
+
       - name: Unit and end-to-end tests
         env:
           LLM_PROVIDER: none

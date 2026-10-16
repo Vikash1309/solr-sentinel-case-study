@@ -12,6 +12,9 @@ from pydantic import BaseModel, Field
 Severity = Literal["info", "warning", "critical"]
 HealthState = Literal["healthy", "degraded", "critical", "unknown"]
 Relation = Literal["observed", "inferred", "temporal"]
+Confidence = Literal["low", "medium", "high"]
+Trigger = Literal["auto", "reanalyze"]
+RCAState = Literal["pending", "completed", "fallback", "failed"]
 
 
 # ---------------------------------------------------------------------------------------------- ingestion
@@ -100,7 +103,7 @@ class Incident(BaseModel):
     links: list[CausalLink]
     hypotheses: list[Hypothesis]
     recurrence_of: Optional[str] = None
-    rca_status: Literal["pending", "completed", "fallback", "failed"] = "pending"
+    rca_status: RCAState = "pending"
     rca_version: int = 0
 
 
@@ -143,7 +146,7 @@ class ClusterHealth(BaseModel):
 # ---------------------------------------------------------------------------------------------- RCA output contract (doc §7.4)
 class RootCause(BaseModel):
     hypothesis: str
-    confidence: Literal["low", "medium", "high"]
+    confidence: Confidence
     supporting_evidence_ids: list[str]
     contradicting_evidence_ids: list[str] = Field(default_factory=list)
     missing_evidence: list[str] = Field(default_factory=list)
@@ -186,7 +189,7 @@ class RCARecord(BaseModel):
     status: Literal["completed", "fallback", "failed"]
     source: Literal["llm", "rules"]
     reason: Optional[str] = None       # why the fallback was used
-    trigger: Literal["auto", "reanalyze"] = "auto"
+    trigger: Trigger = "auto"
     model: Optional[str] = None
     prompt_version: str
     evidence_hash: str

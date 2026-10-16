@@ -23,7 +23,7 @@ one signal, not 300.
 | Replication | `LEADER_ELECTION`, `REPLICA_RECOVERY` | warning |
 | | `NODE_LOST`, `NO_LEADER`, `RECOVERY_FAILED` | critical |
 | Queries | `SLOW_QUERIES` (≥ 5 queries over 1 s) | warning |
-| | `EXPENSIVE_QUERIES`: ≥ 3 queries with `rows` ≥ 1000, `start` ≥ 10000, `facet.limit=-1` or pivots | warning |
+| | `EXPENSIVE_QUERIES`: ≥ 3 queries with `rows` ≥ 5000, `start` ≥ 10000, `facet.limit=-1`, `group.limit=-1` or facet pivots | warning |
 | | `REMOTE_TIMEOUT`: one node timing out on another; the target node is read from the URL | warning |
 | Indexing | `SEARCHER_LIMIT` (commits rejected), `OVERLAPPING_SEARCHERS` | warning |
 | Resources | `CIRCUIT_BREAKER` | warning |

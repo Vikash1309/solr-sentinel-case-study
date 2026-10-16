@@ -1,8 +1,22 @@
 {
-  "generated_at": "2026-10-16T05:45:20.716360+00:00",
+  "generated_at": "2026-10-16T09:52:52.970630+00:00",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "repeats": 3,
   "detection": [
     {
       "seed": 1,
+      "scenarios": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
       "events": 19078,
       "signals": 38,
       "incidents": 4,
@@ -47,11 +61,22 @@
       "parse_errors": 4,
       "parse_errors_ok": true,
       "replay_idempotent": true,
-      "max_detection_delay_s": 0.0,
+      "time_to_detect_s": {
+        "S1": 5.9,
+        "S2": 15.1,
+        "S3": 12.8,
+        "S4": 358.6
+      },
       "cluster_state": "degraded"
     },
     {
       "seed": 2,
+      "scenarios": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
       "events": 19432,
       "signals": 38,
       "incidents": 4,
@@ -96,11 +121,22 @@
       "parse_errors": 4,
       "parse_errors_ok": true,
       "replay_idempotent": true,
-      "max_detection_delay_s": 0.0,
+      "time_to_detect_s": {
+        "S1": 1.4,
+        "S2": 16.4,
+        "S3": 8.8,
+        "S4": 353.3
+      },
       "cluster_state": "degraded"
     },
     {
       "seed": 3,
+      "scenarios": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
       "events": 19077,
       "signals": 38,
       "incidents": 4,
@@ -145,11 +181,22 @@
       "parse_errors": 4,
       "parse_errors_ok": true,
       "replay_idempotent": true,
-      "max_detection_delay_s": 0.0,
+      "time_to_detect_s": {
+        "S1": 12.2,
+        "S2": 8.6,
+        "S3": 13.6,
+        "S4": 347.9
+      },
       "cluster_state": "degraded"
     },
     {
       "seed": 4,
+      "scenarios": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
       "events": 19300,
       "signals": 39,
       "incidents": 4,
@@ -194,11 +241,22 @@
       "parse_errors": 4,
       "parse_errors_ok": true,
       "replay_idempotent": true,
-      "max_detection_delay_s": 0.0,
+      "time_to_detect_s": {
+        "S1": 7.6,
+        "S2": 17.5,
+        "S3": 9.8,
+        "S4": 357.2
+      },
       "cluster_state": "degraded"
     },
     {
       "seed": 5,
+      "scenarios": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
       "events": 19349,
       "signals": 38,
       "incidents": 4,
@@ -243,8 +301,1099 @@
       "parse_errors": 4,
       "parse_errors_ok": true,
       "replay_idempotent": true,
-      "max_detection_delay_s": 0.0,
+      "time_to_detect_s": {
+        "S1": 2.7,
+        "S2": 11.6,
+        "S3": 3.7,
+        "S4": 357.7
+      },
       "cluster_state": "degraded"
+    }
+  ],
+  "control": [
+    {
+      "seed": 1,
+      "scenarios": [],
+      "events": 17125,
+      "signals": 0,
+      "incidents": 0,
+      "recall": null,
+      "missing": [],
+      "precision": null,
+      "false_positives": [],
+      "scenario_checks": {},
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": null,
+      "time_to_detect_s": {},
+      "cluster_state": "healthy"
+    },
+    {
+      "seed": 2,
+      "scenarios": [],
+      "events": 17325,
+      "signals": 0,
+      "incidents": 0,
+      "recall": null,
+      "missing": [],
+      "precision": null,
+      "false_positives": [],
+      "scenario_checks": {},
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": null,
+      "time_to_detect_s": {},
+      "cluster_state": "healthy"
+    },
+    {
+      "seed": 3,
+      "scenarios": [],
+      "events": 17141,
+      "signals": 0,
+      "incidents": 0,
+      "recall": null,
+      "missing": [],
+      "precision": null,
+      "false_positives": [],
+      "scenario_checks": {},
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": null,
+      "time_to_detect_s": {},
+      "cluster_state": "healthy"
+    },
+    {
+      "seed": 4,
+      "scenarios": [],
+      "events": 17090,
+      "signals": 0,
+      "incidents": 0,
+      "recall": null,
+      "missing": [],
+      "precision": null,
+      "false_positives": [],
+      "scenario_checks": {},
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": null,
+      "time_to_detect_s": {},
+      "cluster_state": "healthy"
+    },
+    {
+      "seed": 5,
+      "scenarios": [],
+      "events": 17339,
+      "signals": 0,
+      "incidents": 0,
+      "recall": null,
+      "missing": [],
+      "precision": null,
+      "false_positives": [],
+      "scenario_checks": {},
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": null,
+      "time_to_detect_s": {},
+      "cluster_state": "healthy"
+    }
+  ],
+  "isolation": {
+    "S1": [
+      {
+        "seed": 1,
+        "scenarios": [
+          "S1"
+        ],
+        "events": 17881,
+        "signals": 4,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S1": {
+            "incident": "INC-B2417261",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S1": 2.5
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 2,
+        "scenarios": [
+          "S1"
+        ],
+        "events": 18006,
+        "signals": 4,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S1": {
+            "incident": "INC-B2417261",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S1": 9.2
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 3,
+        "scenarios": [
+          "S1"
+        ],
+        "events": 17871,
+        "signals": 4,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S1": {
+            "incident": "INC-B2417261",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S1": 1.4
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 4,
+        "scenarios": [
+          "S1"
+        ],
+        "events": 17819,
+        "signals": 4,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S1": {
+            "incident": "INC-B2417261",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S1": 1.1
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 5,
+        "scenarios": [
+          "S1"
+        ],
+        "events": 18063,
+        "signals": 4,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S1": {
+            "incident": "INC-B2417261",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S1": 1.3
+        },
+        "cluster_state": "healthy"
+      }
+    ],
+    "S2": [
+      {
+        "seed": 1,
+        "scenarios": [
+          "S2"
+        ],
+        "events": 18348,
+        "signals": 28,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S2": {
+            "incident": "INC-B0E362A4",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S2": 15.1
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 2,
+        "scenarios": [
+          "S2"
+        ],
+        "events": 18609,
+        "signals": 28,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S2": {
+            "incident": "INC-B0E362A4",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S2": 16.4
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 3,
+        "scenarios": [
+          "S2"
+        ],
+        "events": 18349,
+        "signals": 28,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S2": {
+            "incident": "INC-B0E362A4",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S2": 8.6
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 4,
+        "scenarios": [
+          "S2"
+        ],
+        "events": 18432,
+        "signals": 28,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S2": {
+            "incident": "INC-B0E362A4",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S2": 17.5
+        },
+        "cluster_state": "healthy"
+      },
+      {
+        "seed": 5,
+        "scenarios": [
+          "S2"
+        ],
+        "events": 18556,
+        "signals": 28,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S2": {
+            "incident": "INC-B0E362A4",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S2": 11.6
+        },
+        "cluster_state": "healthy"
+      }
+    ],
+    "S3": [
+      {
+        "seed": 1,
+        "scenarios": [
+          "S3"
+        ],
+        "events": 17304,
+        "signals": 5,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S3": {
+            "incident": "INC-FA0FC7DC",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "status_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S3": 8.7
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 2,
+        "scenarios": [
+          "S3"
+        ],
+        "events": 17563,
+        "signals": 5,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S3": {
+            "incident": "INC-FA0FC7DC",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "status_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S3": 9.8
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 3,
+        "scenarios": [
+          "S3"
+        ],
+        "events": 17332,
+        "signals": 5,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S3": {
+            "incident": "INC-FA0FC7DC",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "status_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S3": 17.5
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 4,
+        "scenarios": [
+          "S3"
+        ],
+        "events": 17286,
+        "signals": 5,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S3": {
+            "incident": "INC-FA0FC7DC",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "status_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S3": 10.5
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 5,
+        "scenarios": [
+          "S3"
+        ],
+        "events": 17528,
+        "signals": 5,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S3": {
+            "incident": "INC-FA0FC7DC",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "status_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S3": 4.4
+        },
+        "cluster_state": "degraded"
+      }
+    ],
+    "S4": [
+      {
+        "seed": 1,
+        "scenarios": [
+          "S4"
+        ],
+        "events": 17052,
+        "signals": 1,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S4": {
+            "incident": "INC-0FA326AD",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "node_state_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S4": 350.1
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 2,
+        "scenarios": [
+          "S4"
+        ],
+        "events": 17253,
+        "signals": 1,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S4": {
+            "incident": "INC-0FA326AD",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "node_state_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S4": 355.7
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 3,
+        "scenarios": [
+          "S4"
+        ],
+        "events": 17071,
+        "signals": 1,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S4": {
+            "incident": "INC-0FA326AD",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "node_state_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S4": 358.7
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 4,
+        "scenarios": [
+          "S4"
+        ],
+        "events": 17019,
+        "signals": 1,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S4": {
+            "incident": "INC-0FA326AD",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "node_state_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S4": 350.9
+        },
+        "cluster_state": "degraded"
+      },
+      {
+        "seed": 5,
+        "scenarios": [
+          "S4"
+        ],
+        "events": 17267,
+        "signals": 1,
+        "incidents": 1,
+        "recall": 1.0,
+        "missing": [],
+        "precision": 1.0,
+        "false_positives": [],
+        "scenario_checks": {
+          "S4": {
+            "incident": "INC-0FA326AD",
+            "pattern_ok": true,
+            "root_ok": true,
+            "nodes_ok": true,
+            "severity_ok": true,
+            "node_state_ok": true
+          }
+        },
+        "unexpected_incidents": [],
+        "parse_errors": 4,
+        "parse_errors_ok": true,
+        "replay_idempotent": null,
+        "time_to_detect_s": {
+          "S4": 349.4
+        },
+        "cluster_state": "degraded"
+      }
+    ]
+  },
+  "sensitivity": [
+    {
+      "knob": "GC pause",
+      "factor": 0.75,
+      "values": {
+        "gc_pause_warn_ms": 750,
+        "gc_pause_crit_ms": 3750
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "GC pause",
+      "factor": 1.25,
+      "values": {
+        "gc_pause_warn_ms": 1250,
+        "gc_pause_crit_ms": 6250
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "GC overhead %",
+      "factor": 0.75,
+      "values": {
+        "gc_overhead_warn_pct": 7,
+        "gc_overhead_crit_pct": 18
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "GC overhead %",
+      "factor": 1.25,
+      "values": {
+        "gc_overhead_warn_pct": 13,
+        "gc_overhead_crit_pct": 32
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Heap after GC %",
+      "factor": 0.75,
+      "values": {
+        "heap_after_gc_warn_pct": 63,
+        "heap_after_gc_crit_pct": 69
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 18,
+      "checks": 19,
+      "failed": [
+        "S3.severity"
+      ],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Heap after GC %",
+      "factor": 1.25,
+      "values": {
+        "heap_after_gc_warn_pct": 99,
+        "heap_after_gc_crit_pct": 99
+      },
+      "recall": 0.947,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [
+        "S3:GC_HEAP_PRESSURE@solr-node2"
+      ],
+      "false_positives": [],
+      "unexpected_incidents": [
+        "INC-A1955A26 Long GC pause on solr-node2"
+      ]
+    },
+    {
+      "knob": "Humongous burst",
+      "factor": 0.75,
+      "values": {
+        "humongous_burst_min": 3
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Humongous burst",
+      "factor": 1.25,
+      "values": {
+        "humongous_burst_min": 7
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Slow query ms",
+      "factor": 0.75,
+      "values": {
+        "slow_query_ms": 750
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Slow query ms",
+      "factor": 1.25,
+      "values": {
+        "slow_query_ms": 1250
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Expensive query burst",
+      "factor": 0.75,
+      "values": {
+        "expensive_query_burst_min": 2
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Expensive query burst",
+      "factor": 1.25,
+      "values": {
+        "expensive_query_burst_min": 4
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Commits per minute",
+      "factor": 0.75,
+      "values": {
+        "explicit_commits_per_min": 4
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Commits per minute",
+      "factor": 1.25,
+      "values": {
+        "explicit_commits_per_min": 8
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Remote timeout burst",
+      "factor": 0.75,
+      "values": {
+        "remote_timeout_burst_min": 1
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Remote timeout burst",
+      "factor": 1.25,
+      "values": {
+        "remote_timeout_burst_min": 3
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Error burst",
+      "factor": 0.75,
+      "values": {
+        "error_burst_min": 3
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Error burst",
+      "factor": 1.25,
+      "values": {
+        "error_burst_min": 7
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Baseline MAD k",
+      "factor": 0.75,
+      "values": {
+        "mad_k": 2.62
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Baseline MAD k",
+      "factor": 1.25,
+      "values": {
+        "mad_k": 4.38
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Telemetry stale after",
+      "factor": 0.75,
+      "values": {
+        "telemetry_stale_after_s": 225
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Telemetry stale after",
+      "factor": 1.25,
+      "values": {
+        "telemetry_stale_after_s": 375
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Burst gap",
+      "factor": 0.75,
+      "values": {
+        "burst_gap_s": 90
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
+    },
+    {
+      "knob": "Burst gap",
+      "factor": 1.25,
+      "values": {
+        "burst_gap_s": 150
+      },
+      "recall": 1.0,
+      "precision": 1.0,
+      "checks_ok": 19,
+      "checks": 19,
+      "failed": [],
+      "missing": [],
+      "false_positives": [],
+      "unexpected_incidents": []
     }
   ],
   "rca": [
@@ -254,13 +1403,15 @@
       "llm_answers": 0,
       "first_try_valid": 0,
       "fallbacks": null,
+      "fallback_reasons": {},
       "root_cause_accuracy": 1.0,
       "root_cited": 1.0,
       "root_node_named": 1.0,
       "severity_kept": 1.0,
       "unverified_numbers": 0,
-      "avg_latency_s": 0.0,
+      "avg_latency_s": 0.5,
       "tokens": "0/0",
+      "consistent_incidents": null,
       "per_incident": [
         {
           "scenario": "S1",
@@ -275,7 +1426,7 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "medium",
-          "latency_s": 0.0,
+          "latency_s": 1.6,
           "tokens_in": 0,
           "tokens_out": 0,
           "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
@@ -293,7 +1444,7 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "medium",
-          "latency_s": 0.0,
+          "latency_s": 0.3,
           "tokens_in": 0,
           "tokens_out": 0,
           "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
@@ -334,27 +1485,141 @@
           "tokens_out": 0,
           "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
         }
+      ],
+      "incidents": [
+        {
+          "scenario": "S1",
+          "runs": [
+            {
+              "scenario": "S1",
+              "source": "rules",
+              "reason": "llm_disabled",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 1.6,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        },
+        {
+          "scenario": "S2",
+          "runs": [
+            {
+              "scenario": "S2",
+              "source": "rules",
+              "reason": "llm_disabled",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 0.3,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        },
+        {
+          "scenario": "S3",
+          "runs": [
+            {
+              "scenario": "S3",
+              "source": "rules",
+              "reason": "llm_disabled",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 0.0,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        },
+        {
+          "scenario": "S4",
+          "runs": [
+            {
+              "scenario": "S4",
+              "source": "rules",
+              "reason": "llm_disabled",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 0.0,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        }
       ]
     },
     {
       "model": "gemini:gemini-3.8-flash",
-      "n": 4,
-      "llm_answers": 3,
-      "first_try_valid": 3,
-      "fallbacks": 1,
-      "root_cause_accuracy": 1.0,
-      "root_cited": 1.0,
-      "root_node_named": 1.0,
-      "severity_kept": 1.0,
+      "n": 12,
+      "llm_answers": 0,
+      "first_try_valid": 0,
+      "fallbacks": 12,
+      "fallback_reasons": {
+        "llm_unavailable": 12
+      },
+      "root_cause_accuracy": null,
+      "root_cited": null,
+      "root_node_named": null,
+      "severity_kept": null,
       "unverified_numbers": 0,
-      "avg_latency_s": 22.9,
-      "tokens": "26,971/4,071",
+      "avg_latency_s": null,
+      "tokens": "0/0",
+      "consistent_incidents": null,
       "per_incident": [
         {
           "scenario": "S1",
-          "source": "llm",
-          "reason": null,
-          "first_try_valid": true,
+          "source": "rules",
+          "reason": "llm_unavailable",
+          "first_try_valid": false,
           "valid": true,
           "concepts_ok": true,
           "root_cited": true,
@@ -362,17 +1627,17 @@
           "severity_kept": true,
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
-          "confidence": "high",
-          "latency_s": 23.8,
-          "tokens_in": 3968,
-          "tokens_out": 1297,
-          "hypothesis": "An indexing client issued rapid explicit commits (59/min) opening new searchers on products_shard2_replica_n10, exceeding the maxWarmingSearchers limit (=2), rejecting commits, and invalidating query caches."
+          "confidence": "medium",
+          "latency_s": 15.8,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
         },
         {
           "scenario": "S2",
-          "source": "llm",
-          "reason": null,
-          "first_try_valid": true,
+          "source": "rules",
+          "reason": "llm_unavailable",
+          "first_try_valid": false,
           "valid": true,
           "concepts_ok": true,
           "root_cited": true,
@@ -380,11 +1645,11 @@
           "severity_kept": true,
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
-          "confidence": "high",
-          "latency_s": 26.8,
-          "tokens_in": 20592,
-          "tokens_out": 1831,
-          "hypothesis": "Expensive queries (deep paging with large rows and unbounded facet limits) caused excessive humongous allocations directly into the G1 old generation, driving heap occupancy to 99.1% and inducing a stop-the-world Full GC pause of 18234.6 ms that exceeded the 15000 ms ZooKeeper client timeout, resulting in session expiry and replica degradation on solr-node2."
+          "confidence": "medium",
+          "latency_s": 16.2,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
         },
         {
           "scenario": "S3",
@@ -399,16 +1664,16 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "low",
-          "latency_s": 22.3,
+          "latency_s": 15.9,
           "tokens_in": 0,
           "tokens_out": 0,
           "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
         },
         {
           "scenario": "S4",
-          "source": "llm",
-          "reason": null,
-          "first_try_valid": true,
+          "source": "rules",
+          "reason": "llm_unavailable",
+          "first_try_valid": false,
           "valid": true,
           "concepts_ok": true,
           "root_cited": true,
@@ -416,13 +1681,273 @@
           "severity_kept": true,
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
-          "confidence": "high",
-          "latency_s": 18.9,
-          "tokens_in": 2411,
-          "tokens_out": 943,
-          "hypothesis": "GC log telemetry pipeline failure or collector/shipping process issue on solr-node3 causing stale GC metrics while the Solr process remained operational."
+          "confidence": "low",
+          "latency_s": 15.6,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
+        }
+      ],
+      "incidents": [
+        {
+          "scenario": "S1",
+          "runs": [
+            {
+              "scenario": "S1",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 15.8,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
+            },
+            {
+              "scenario": "S1",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 15.8,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
+            },
+            {
+              "scenario": "S1",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 15.6,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        },
+        {
+          "scenario": "S2",
+          "runs": [
+            {
+              "scenario": "S2",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 16.2,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
+            },
+            {
+              "scenario": "S2",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 16.1,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
+            },
+            {
+              "scenario": "S2",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 16.5,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        },
+        {
+          "scenario": "S3",
+          "runs": [
+            {
+              "scenario": "S3",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 15.9,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+            },
+            {
+              "scenario": "S3",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 15.7,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+            },
+            {
+              "scenario": "S3",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 15.7,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
+        },
+        {
+          "scenario": "S4",
+          "runs": [
+            {
+              "scenario": "S4",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 15.6,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
+            },
+            {
+              "scenario": "S4",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 15.5,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
+            },
+            {
+              "scenario": "S4",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 15.6,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
+            }
+          ],
+          "consistency": {
+            "llm_runs": 0,
+            "consistent": null
+          }
         }
       ]
+    }
+  ],
+  "injection": [
+    {
+      "model": "gemini:gemini-3.8-flash",
+      "error": "provider error: HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.d"
     }
   ]
 }

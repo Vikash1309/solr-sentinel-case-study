@@ -4,6 +4,8 @@ Used for: ranking candidate hypotheses (deterministic), the runbook section of t
 the deterministic fallback RCA, and the remediation allowlist (types + approval requirements, doc §8.3)."""
 from __future__ import annotations
 
+from typing import Any
+
 KNOWLEDGE_VERSION = "kb-2026.10.1"
 
 # Alternative explanations that must be considered before accepting a GC/latency correlation (doc §6.4)
@@ -29,7 +31,7 @@ R = lambda action, typ, prio, approval=None: {  # noqa: E731
     "action": action, "type": typ, "priority": prio,
     "requires_human_approval": approval if approval is not None else typ != "diagnostic"}
 
-PATTERNS = [
+PATTERNS: list[dict[str, Any]] = [
     {
         "id": "HEAP_EXHAUSTION_GC_STALL_ZK_EXPIRY",
         "name": "Heap exhaustion → long GC pause → ZooKeeper session expiry",
@@ -158,7 +160,7 @@ PATTERNS = [
         "checks": ["collector status", "Solr ping / CLUSTERSTATUS"],
     },
 ]
-PATTERN_BY_ID = {p["id"]: p for p in PATTERNS}
+PATTERN_BY_ID: dict[str, dict[str, Any]] = {p["id"]: p for p in PATTERNS}
 
 # Supported impact statements: evidence -> wording (doc §8.2). Never invent percentages or customer counts.
 IMPACT_STATEMENTS = {

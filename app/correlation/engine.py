@@ -21,7 +21,7 @@ import hashlib
 from datetime import datetime, timedelta
 
 from ..config import SEVERITY_RANK, Settings
-from ..schemas import CausalLink, Hypothesis, Incident, Signal
+from ..schemas import CausalLink, Hypothesis, Incident, Relation, Severity, Signal
 from .knowledge import PATTERN_BY_ID, match_patterns
 
 GC_STALL = {"GC_FULL", "GC_LONG_PAUSE", "GC_PAUSE_EXCEEDS_ZK_TIMEOUT"}
@@ -31,7 +31,7 @@ AVAILABILITY_IMPACT = {"NO_LEADER", "NODE_LOST", "SOLR_OOM", "DISK_FULL", "RECOV
                        "GC_PAUSE_EXCEEDS_ZK_TIMEOUT", "TOO_MANY_OPEN_FILES"}
 
 # (cause types, effect types, scope, max lag after cause end [s], tolerance for effect-before-cause [s], relation, reason)
-CAUSAL_RULES = [
+CAUSAL_RULES: list[tuple[set[str], set[str], str, int, int, Relation, str]] = [
     ({"EXPENSIVE_QUERIES"}, GC_PRESSURE | {"GC_EVAC_FAILURE", "CIRCUIT_BREAKER"}, "same", 300, 120, "inferred",
      "large result sets / unbounded facets allocate humongous objects"),
     ({"EXPENSIVE_QUERIES"}, {"LATENCY_DEGRADATION"}, "same", 300, 120, "temporal", "slow expensive requests raise p95 latency"),
@@ -103,7 +103,7 @@ def _components(ids: list[str], links: list[CausalLink]) -> list[set[str]]:
     return list(groups.values())
 
 
-def severity_policy(members: list[Signal]) -> tuple[str, str]:
+def severity_policy(members: list[Signal]) -> tuple[Severity, str]:
     """Deterministic incident severity (doc §5.1, §7.6). A single non-availability signal is never critical."""
     worst = max(members, key=lambda s: (SEVERITY_RANK[s.severity], s.method != "baseline", -s.start.timestamp()))
     if worst.severity == "critical":

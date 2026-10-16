@@ -6,7 +6,7 @@ from __future__ import annotations
 from collections import defaultdict, deque
 
 from ..correlation.knowledge import PATTERN_BY_ID
-from ..schemas import AlternativeHypothesis, Incident, OperationalImpact, RCAReport, Remediation, RootCause, Signal
+from ..schemas import AlternativeHypothesis, Confidence, Incident, OperationalImpact, RCAReport, Remediation, RootCause, Signal
 
 SYMPTOMS = {"LATENCY_DEGRADATION", "REMOTE_TIMEOUT", "NO_LEADER", "LEADER_ELECTION", "REPLICA_RECOVERY", "NODE_LOST",
             "ERROR_RATE_SPIKE", "SLOW_QUERIES", "SEARCHER_LIMIT", "CIRCUIT_BREAKER", "TELEMETRY_STALE"}
@@ -35,7 +35,7 @@ def build(inc: Incident, sig: dict[str, Signal], pack: dict, reason: str) -> RCA
     others = [h for h in inc.hypotheses[1:] if h not in contributing][:2]
     root_records = [r["id"] for r in pack["records"] if root.signal_id in r.get("signals", [])][:3]
     observed = any(l.relation == "observed" for l in inc.links)
-    confidence = "medium" if (top and inc.hypotheses[0].score >= 0.7 and observed) else "low"
+    confidence: Confidence = "medium" if (top and inc.hypotheses[0].score >= 0.7 and observed) else "low"
     if top:
         hyp = (f"{top['name']}. Earliest triggering condition: '{root.title}' on {root.node_id} at "
                f"{root.start:%H:%M:%S} UTC ({root.detail}).")

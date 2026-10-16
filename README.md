@@ -19,10 +19,17 @@ report is shown instead.
 |---|---|
 | Problems found / false alarms | 100 % found, 0 false alarms |
 | Incident checks (root cause, nodes, severity, recurrence, Unknown state) | 19/19 on every seed |
-| Malformed log lines kept for review | 4/4 |
-| Re-reading all logs from scratch | 0 duplicate events or incidents |
-| Root cause named correctly, rules / Gemini | 4/4 / 3 of 3 answered (1 fell back to rules) |
-| Tests | 54 passing, including the production safeguards |
+| Control run with nothing planted | 0 signals, 0 incidents on every seed |
+| Each problem on its own | 90/90 checks, no cross-talk |
+| Every threshold moved ±25 %, one at a time | 22 of 24 variations pass everything; the 2 that don't show the heap threshold needs tuning on real logs |
+| Time to detect | 1–18 s for the three log-pattern problems; about 6 min for a silent log source (by design) |
+| Malformed log lines kept for review / re-reading all logs | 4/4 / 0 duplicates |
+| Root cause named correctly, rules / Gemini | 4/4 / 3 of 3 answered in the first run (latest run blocked by the free-tier quota) |
+| Tests / type check / complexity | 59 passing / mypy clean / no function above 15 |
+
+These numbers come from synthetic logs written by the same author as the rules: they show the pipeline works as
+designed, not accuracy on real clusters. [EVALUATION.md](docs/EVALUATION.md) ends with exactly what it does and
+does not prove.
 
 ![Dashboard](docs/dashboard-overview.png)
 
@@ -76,11 +83,13 @@ still single-node, and how to deploy it: [docs/production-readiness.md](docs/pro
 # all tests, inside the test image (the LLM is switched off so tests never use your quota)
 docker compose run --rm -e LLM_PROVIDER=none tools
 
-# score detection and root-cause answers against the labelled scenarios
-docker compose run --rm tools python run.py eval --models rules,gemini
+# full evaluation: detection (full, control, isolated, threshold sensitivity) and root-cause answers,
+# with each LLM answer repeated 3 times for consistency and a prompt-injection test
+docker compose run --rm tools python run.py eval --models rules,gemini --repeats 3 --injection
 ```
 
-The evaluation writes `docs/EVALUATION.md` and `eval/results/latest.json` back to your machine.
+The evaluation writes `docs/EVALUATION.md` and `eval/results/latest.json` back to your machine. The report ends
+with what the evaluation does and does not prove.
 
 Other commands (`python run.py <command>`, or prefix with `docker compose run --rm api`):
 
@@ -155,7 +164,7 @@ app/
 dashboard/       Streamlit UI
 scripts/         sample log generator
 eval/            labelled scenarios and results
-tests/           54 tests
+tests/           59 tests
 docs/            design document, architecture diagram and the pages listed above
 deploy/          LiteLLM gateway config for production
 .github/         CI: lint, tests, secret scan, dependency audit, image build and scan

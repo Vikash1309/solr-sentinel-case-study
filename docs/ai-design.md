@@ -94,10 +94,17 @@ is clearly labelled *"AI RCA not used"*, with the reason.
 
 ## Results
 
-On the 4 labelled incidents, Gemini 3.8 Flash answered 3, each valid on the first try. All 3 named the right
-root cause and node, cited the right evidence, kept the severity, and used no invented numbers. The 4th call
-failed and fell back to the rules-based report, which was also correct. Each answer took about 23 seconds.
-Details are in [EVALUATION.md](EVALUATION.md).
+In the first evaluation run, Gemini 3.8 Flash answered 3 of the 4 labelled incidents, each valid on the first
+try. All 3 named the right root cause and node, cited the right evidence, kept the severity, and used no invented
+numbers. The 4th call hit a temporary provider error (HTTP 503) and fell back to the rules-based report. Each answer
+took about 23 seconds.
+
+The evaluation now also repeats every analysis 3 times to measure consistency, and plants a prompt injection in
+the log text to test whether the model can be hijacked. The latest run could not reach Gemini: the free tier
+allows 20 requests a day and the quota was used up, so [EVALUATION.md](EVALUATION.md) shows those rows as not run
+rather than scoring the fallback answers as Gemini's. Re-run with
+`python run.py eval --models rules,gemini --repeats 3 --injection` once quota is available (or with a paid or
+production provider).
 
 ## What would come next
 

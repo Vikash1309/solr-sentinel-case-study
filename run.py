@@ -6,7 +6,7 @@
     python run.py process     one synchronous ingest + analysis + RCA run, printed to the console
     python run.py simulate    empty DB, then append 5 minutes of logs every 10 s while API + dashboard run
     python run.py generate    (re)write the synthetic sample logs
-    python run.py eval        evaluate detection (5 seeds) and RCA providers against ground truth
+    python run.py eval        evaluate detection (full, control, isolated, threshold sensitivity) and RCA providers
     python run.py reset       delete the local database and uploads
 """
 from __future__ import annotations
@@ -75,6 +75,9 @@ def main():
     ap.add_argument("--ui-port", type=int, default=8501)
     ap.add_argument("--models", default="rules,auto", help="eval: comma-separated provider[:model] list; 'rules' = no LLM")
     ap.add_argument("--seeds", default="1,2,3,4,5", help="eval: random seeds for the detection evaluation")
+    ap.add_argument("--repeats", type=int, default=1, help="eval: analyse each incident N times per LLM (consistency)")
+    ap.add_argument("--injection", action="store_true", help="eval: run the prompt-injection test against each LLM")
+    ap.add_argument("--no-sensitivity", action="store_true", help="eval: skip the threshold sensitivity analysis")
     a = ap.parse_args()
     s = _settings()
     from app.observability import configure_logging
@@ -87,7 +90,8 @@ def main():
         _generate(s)
     elif a.command == "eval":
         from app import evaluation
-        evaluation.run([m.strip() for m in a.models.split(",") if m.strip()], [int(x) for x in a.seeds.split(",")], s)
+        evaluation.run([m.strip() for m in a.models.split(",") if m.strip()], [int(x) for x in a.seeds.split(",")], s,
+                       repeats=max(1, a.repeats), injection=a.injection, sensitivity=not a.no_sensitivity)
         print((ROOT / "docs" / "EVALUATION.md").read_text(encoding="utf-8"))
     elif a.command == "process":
         from app.pipeline import run_analysis

@@ -62,16 +62,8 @@ def _known(v: float, nums: list[float]) -> bool:
     return any(n and abs(c - n) <= 0.015 * abs(n) for c in (v * 1000, v * 1024, v * 60) for n in nums)
 
 
-def validate(data: dict, pack: dict) -> tuple[RCAReport | None, dict]:
-    errors, warnings, corrections = [], [], []
-    try:
-        report = RCAReport.model_validate(data)
-    except ValidationError as e:
-        msgs = [f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}" for err in e.errors()[:8]]
-        return None, {"valid": False, "errors": ["output does not match the RCA contract: " + "; ".join(msgs)],
-                      "warnings": [], "corrections": [], "cited_ids": [], "unverified_numbers": []}
-
-    ids = valid_ids(pack)
+def _cited_ids(report: RCAReport) -> set[str]:
+    """Every evidence ID the answer relies on: the citation lists, plus IDs mentioned in the free text."""
     rc = report.probable_root_cause
     cited = set(rc.supporting_evidence_ids) | set(rc.contradicting_evidence_ids)
     for r in report.recommended_remediation:
@@ -80,11 +72,21 @@ def validate(data: dict, pack: dict) -> tuple[RCAReport | None, dict]:
         cited |= set(a.evidence_ids)
     for txt in _strings(report.model_dump(), skip=()):
         cited |= set(ID_RX.findall(txt))
+    return cited
+
+
+def _evidence_errors(report: RCAReport, cited: set[str], ids: set[str]) -> list[str]:
+    errors = []
     fake = sorted(c for c in cited if c not in ids)
     if fake:
         errors.append(f"cites evidence IDs that do not exist: {', '.join(fake[:10])}")
-    if rc.confidence != "low" and not rc.supporting_evidence_ids:
+    if report.probable_root_cause.confidence != "low" and not report.probable_root_cause.supporting_evidence_ids:
         errors.append("a medium/high-confidence root cause must cite supporting_evidence_ids")
+    return errors
+
+
+def _policy_errors(report: RCAReport, pack: dict) -> list[str]:
+    errors = []
     policy = pack["incident"]["policy_severity"]
     if report.operational_impact.severity != policy:
         errors.append(f"operational_impact.severity must equal the policy severity '{policy}' "
@@ -93,6 +95,12 @@ def validate(data: dict, pack: dict) -> tuple[RCAReport | None, dict]:
     unknown_nodes = [n for n in report.operational_impact.affected_nodes if n not in nodes]
     if unknown_nodes:
         errors.append(f"affected_nodes contains nodes not in the cluster: {', '.join(unknown_nodes)}")
+    return errors
+
+
+def _remediation_checks(report: RCAReport) -> tuple[list[str], list[str], list[str]]:
+    """Unsafe actions are errors; missing approvals are corrected (policy wins); no diagnostic step is a warning."""
+    errors, corrections, warnings = [], [], []
     for i, r in enumerate(report.recommended_remediation):
         if UNSAFE.search(r.action):
             errors.append(f"remediation[{i}] contains a command or destructive operation; describe the action instead")
@@ -101,7 +109,10 @@ def validate(data: dict, pack: dict) -> tuple[RCAReport | None, dict]:
             corrections.append(f"remediation[{i}] ({r.type}) set to require human approval")
     if report.recommended_remediation and not any(r.type == "diagnostic" for r in report.recommended_remediation):
         warnings.append("no diagnostic action recommended before disruptive changes")
+    return errors, corrections, warnings
 
+
+def _unverified_numbers(report: RCAReport, pack: dict) -> list[str]:
     nums = _pack_numbers(pack)
     unverified = []
     for txt in _strings(report.model_dump()):
@@ -112,9 +123,22 @@ def validate(data: dict, pack: dict) -> tuple[RCAReport | None, dict]:
                 continue  # small counts ("2 shards") are not checked
             if not _known(v, nums):
                 unverified.append(m)
+    return sorted(set(unverified))
+
+
+def validate(data: dict, pack: dict) -> tuple[RCAReport | None, dict]:
+    try:
+        report = RCAReport.model_validate(data)
+    except ValidationError as e:
+        msgs = [f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}" for err in e.errors()[:8]]
+        return None, {"valid": False, "errors": ["output does not match the RCA contract: " + "; ".join(msgs)],
+                      "warnings": [], "corrections": [], "cited_ids": [], "unverified_numbers": []}
+    ids = valid_ids(pack)
+    cited = _cited_ids(report)
+    remediation_errors, corrections, warnings = _remediation_checks(report)
+    errors = _evidence_errors(report, cited, ids) + _policy_errors(report, pack) + remediation_errors
+    unverified = _unverified_numbers(report, pack)
     if unverified:
-        warnings.append(f"numbers not found in the evidence: {', '.join(sorted(set(unverified))[:10])}")
-    if corrections:
-        warnings += corrections
-    return report, {"valid": not errors, "errors": errors, "warnings": warnings, "corrections": corrections,
-                    "cited_ids": sorted(cited & ids), "unverified_numbers": sorted(set(unverified))}
+        warnings.append(f"numbers not found in the evidence: {', '.join(unverified[:10])}")
+    return report, {"valid": not errors, "errors": errors, "warnings": warnings + corrections, "corrections": corrections,
+                    "cited_ids": sorted(cited & ids), "unverified_numbers": unverified}

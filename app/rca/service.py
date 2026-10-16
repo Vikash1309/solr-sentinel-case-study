@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 
 from ..config import SEVERITY_RANK, Settings
 from ..observability import METRICS
-from ..schemas import ClusterHealth, Incident, RCARecord, Signal
+from ..schemas import ClusterHealth, Incident, RCARecord, Signal, Trigger
 from ..storage.repository import Repository
 from . import evidence, fallback, prompts, validation
 from .providers import LLMClient, LLMError
@@ -44,7 +44,7 @@ class RCAService:
             t.start()
             self._workers.append(t)
 
-    def enqueue(self, incident_id: str, trigger: str = "auto", model: str | None = None, prompt_version: str | None = None):
+    def enqueue(self, incident_id: str, trigger: Trigger = "auto", model: str | None = None, prompt_version: str | None = None):
         with self._lock:
             if incident_id in self._queued:
                 return False
@@ -116,7 +116,7 @@ class RCAService:
         return ({self.client.model, self.client.model_strong} | extra) - {""}
 
     # ------------------------------------------------------------------------------------------ analysis
-    def analyze(self, incident_id: str, trigger: str = "auto", model: str | None = None,
+    def analyze(self, incident_id: str, trigger: Trigger = "auto", model: str | None = None,
                 prompt_version: str | None = None) -> RCARecord:
         t0 = time.time()
         inc = self.repo.incident(incident_id)

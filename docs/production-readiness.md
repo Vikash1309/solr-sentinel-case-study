@@ -45,7 +45,8 @@ traffic, and the design for it already exists ([architecture.md](architecture.md
 |---|---|
 | Logs | `SENTINEL_LOG_FORMAT=json` writes one JSON object per line (app and web server), ready for CloudWatch, Datadog or Fluent Bit |
 | Metrics | `/api/v1/metrics` in Prometheus format: ingest volume and lag, parse errors, analysis time, RCA queue depth, outcomes, latency, tokens and cost |
-| CI | Every push: secret scan, lint (including security rules), 54 tests, dependency vulnerability audit, tests inside the image, a non-root check, a check that production mode rejects unsafe settings, and an image vulnerability scan |
+| CI | Every push: secret scan, lint (including security rules and a complexity cap), type check (mypy), the full test suite, dependency vulnerability audit, tests inside the image, a non-root check, a check that production mode rejects unsafe settings, and an image vulnerability scan |
+| Code health | Type-checked with mypy (no errors). No function exceeds a cyclomatic complexity of 15, enforced by lint. Every GitHub Action is pinned to a commit SHA |
 
 ## Running in production
 

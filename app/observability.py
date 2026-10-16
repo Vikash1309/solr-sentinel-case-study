@@ -24,14 +24,17 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(out, ensure_ascii=False)
 
 
+class _SentinelHandler(logging.StreamHandler):
+    """Marker type, so reconfiguring replaces only our own handler and leaves others (e.g. test capture) alone."""
+
+
 def configure_logging(level: str = "INFO", fmt: str = "text") -> None:
     """Send application logs (and uvicorn's) to stderr in one consistent format. Safe to call more than once."""
-    handler = logging.StreamHandler()
+    handler = _SentinelHandler()
     handler.setFormatter(JsonFormatter() if fmt == "json" else
                          logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-    handler._sentinel = True          # replace only our own handler; leave others (e.g. test capture) alone
     root = logging.getLogger()
-    root.handlers = [h for h in root.handlers if not getattr(h, "_sentinel", False)] + [handler]
+    root.handlers = [h for h in root.handlers if not isinstance(h, _SentinelHandler)] + [handler]
     root.setLevel(level)
     if fmt == "json":   # uvicorn installs its own text handlers; route its logs through ours instead
         for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
@@ -40,7 +43,7 @@ def configure_logging(level: str = "INFO", fmt: str = "text") -> None:
 
 
 class Metrics:
-    def __init__(self):
+    def __init__(self) -> None:
         self._lock = threading.Lock()
         self.counters: dict[tuple, float] = defaultdict(float)
         self.gauges: dict[tuple, float] = {}

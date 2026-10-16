@@ -48,7 +48,8 @@ def _audit(request: Request, key: str, action: str, **details):
 
 class RateLimiter:
     def __init__(self, per_minute: int):
-        self.per_minute, self.hits, self.lock = per_minute, defaultdict(deque), threading.Lock()
+        self.per_minute, self.lock = per_minute, threading.Lock()
+        self.hits: defaultdict[str, deque[float]] = defaultdict(deque)
 
     def check(self, key: str):
         now = time.time()

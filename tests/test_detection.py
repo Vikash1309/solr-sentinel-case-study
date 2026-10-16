@@ -45,3 +45,20 @@ def test_missing_telemetry_is_a_signal_not_node_down():
     sig = telemetry_signals({("n3", "gc"): (now - timedelta(minutes=13)).timestamp(),
                              ("n3", "solr"): (now - timedelta(seconds=5)).timestamp()}, now, Settings())
     assert len(sig) == 1 and sig[0].signal_type == "TELEMETRY_STALE" and sig[0].severity == "warning"
+
+
+def test_expensive_query_detection_does_not_depend_on_parameter_order():
+    from datetime import datetime, timezone
+
+    from app.detection.rules import _expensive
+    from app.schemas import LogEvent
+
+    def ev(params):
+        now = datetime.now(timezone.utc)
+        return LogEvent(event_id="x", timestamp=now, ingested_at=now, cluster_id="c", node_id="n", source_type="solr",
+                        event_type="solr_request", message="m", attributes={"params": params}, source_file="f",
+                        source_offset=0, parser_version="v", raw="r")
+
+    assert _expensive(ev("rows=2000&facet.limit=-1")) and _expensive(ev("facet.limit=-1&rows=2000"))
+    assert _expensive(ev("rows=20000")) and _expensive(ev("start=50000&rows=10"))
+    assert not _expensive(ev("rows=2000")) and not _expensive(ev("q=shoes&rows=20"))

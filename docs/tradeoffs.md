@@ -25,7 +25,8 @@ What is already hardened, and the remaining gaps before production traffic, are 
 | Every fix needs human approval | Slower than automation | Automate low-risk fixes behind policy, approval and rollback |
 | Logs only | Can't see CPU, disk, network or who sent a bad query | Add host metrics, the Solr Metrics API, ZooKeeper stats and request logs |
 | Streamlit dashboard | Basic; no alert routing | Plug into the existing monitoring, ticketing and on-call tools |
-| Synthetic test scenarios | Not real incidents | Add real, messy and ambiguous cases, plus disk-full, OOM, ZooKeeper outage and network split |
+| Synthetic test scenarios, written by the same author as the rules | Not real incidents: high scores prove the pipeline works as designed, not accuracy in the field. Partly offset by a control run, isolated scenarios and a threshold sensitivity analysis | Replay real client logs and label real incidents; add disk-full, OOM, ZooKeeper outage, network split and genuinely ambiguous cases |
+| Root-cause accuracy checked by keywords, on 4 incidents | Confirms the right concepts are named, not the quality of the reasoning; small sample | A reviewed set of real incidents, and a second model as judge, calibrated against human labels |
 
 ## Where the prototype goes beyond the design document
 

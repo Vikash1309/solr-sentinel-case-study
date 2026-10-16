@@ -42,12 +42,10 @@ def template(msg: str) -> str:
     return msg[:240]
 
 
-def representative_records(events: list[LogEvent], per_signal: list[tuple[str, list[str]]], max_items: int,
-                           redact: bool) -> list[dict]:
-    """Deduplicate into templates; select round-robin across signals (root first) so every signal with
-    records is represented within the cap, then fill remaining slots ERROR > WARN > INFO."""
+def _group_by_template(events: list[LogEvent], redact: bool) -> tuple["OrderedDict[tuple, dict]", dict[str, tuple]]:
+    """Collapse repeated messages into one template per (node, source, level), with a count and one sample."""
     groups: "OrderedDict[tuple, dict]" = OrderedDict()
-    key_of = {}
+    key_of: dict[str, tuple] = {}
     for e in events:
         msg = redact_query_terms(e.message) if redact else e.message
         key = (e.node_id, e.source_type, e.severity or "", template(msg))
@@ -64,19 +62,27 @@ def representative_records(events: list[LogEvent], per_signal: list[tuple[str, l
         g["last_seen"] = _iso(e.timestamp)
         if len(g["event_ids"]) < 5:
             g["event_ids"].append(e.event_id)
-    chosen: list[tuple] = []
+    return groups, key_of
+
+
+def _queues_per_signal(groups: dict, key_of: dict[str, tuple], per_signal: list[tuple[str, list[str]]]) -> list[list[tuple]]:
+    """For each signal (root first), the templates of its records; also tags each template with its signals."""
     queues = []
     for sid, ids in per_signal:
-        ks = []
-        for i in ids:
-            k = key_of.get(i)
-            if k:
-                if sid not in groups[k]["signals"]:
-                    groups[k]["signals"].append(sid)
-                if k not in ks:
-                    ks.append(k)
+        ks: list[tuple] = []
+        for k in (key_of[i] for i in ids if i in key_of):
+            if sid not in groups[k]["signals"]:
+                groups[k]["signals"].append(sid)
+            if k not in ks:
+                ks.append(k)
         if ks:
             queues.append(ks)
+    return queues
+
+
+def _round_robin(queues: list[list[tuple]], max_items: int) -> list[tuple]:
+    """Take one template from each signal in turn, so every signal is represented before any gets a second."""
+    chosen: list[tuple] = []
     while queues and len(chosen) < max_items:
         nxt = []
         for q in queues:
@@ -87,6 +93,15 @@ def representative_records(events: list[LogEvent], per_signal: list[tuple[str, l
             if q:
                 nxt.append(q)
         queues = nxt
+    return chosen
+
+
+def representative_records(events: list[LogEvent], per_signal: list[tuple[str, list[str]]], max_items: int,
+                           redact: bool) -> list[dict]:
+    """Deduplicate into templates; select round-robin across signals (root first) so every signal with
+    records is represented within the cap, then fill remaining slots ERROR > WARN > INFO."""
+    groups, key_of = _group_by_template(events, redact)
+    chosen = _round_robin(_queues_per_signal(groups, key_of, per_signal), max_items)
     rank = {"ERROR": 0, "WARN": 1, "INFO": 2}
     rest = sorted((k for k in groups if k not in chosen), key=lambda k: (rank.get(k[2], 3), groups[k]["first_seen"]))
     chosen += rest[: max(0, max_items - len(chosen))]
@@ -154,10 +169,10 @@ def build(inc: Incident, signals: dict[str, Signal], events_by_id, series, healt
                    if n.node_id in inc.nodes for t in n.telemetry if t.stale] + relevant + missing
     hyps = []
     for h in inc.hypotheses[:3]:
-        k = PATTERN_BY_ID[h.pattern_id]
+        pattern = PATTERN_BY_ID[h.pattern_id]
         hyps.append({"pattern_id": h.pattern_id, "name": h.name, "match_score": h.score, "matched_signal_types": h.matched,
-                     "contradicting_signal_types": h.contradicting, "mechanism": k["mechanism"],
-                     "pattern_specific_alternatives": k["alternatives"]})
+                     "contradicting_signal_types": h.contradicting, "mechanism": pattern["mechanism"],
+                     "pattern_specific_alternatives": pattern["alternatives"]})
     runbook = {h.pattern_id: {"remediation": PATTERN_BY_ID[h.pattern_id]["remediation"],
                               "checks": PATTERN_BY_ID[h.pattern_id]["checks"]} for h in inc.hypotheses[:2]}
     pack = {

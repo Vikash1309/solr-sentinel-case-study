@@ -18,7 +18,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Callable, Optional
 
 from ..config import SEVERITY_RANK, Settings
-from ..schemas import LogEvent, Signal
+from ..schemas import LogEvent, Severity, Signal
 from .baselines import robust_flags
 
 URL_HOST = re.compile(r"https?://([\w.-]+):\d+")
@@ -29,11 +29,11 @@ EXPENSIVE = re.compile(r"rows=(\d{4,})|start=(\d{5,})|facet\.limit=-1|facet\.piv
 class EventRule:
     type: str
     category: str
-    severity: str
+    severity: Severity
     title: str
     match: Callable[[LogEvent, Settings], bool]
     min_count: int | Callable[[Settings], int] = 1
-    severity_fn: Optional[Callable[[list[LogEvent], Settings], str]] = None
+    severity_fn: Optional[Callable[[list[LogEvent], Settings], Severity]] = None
 
 
 def _text(pattern: str, types=("solr_log", "solr_request", "solr_update", "solr_slow_request")):
@@ -48,8 +48,10 @@ def _live_nodes_decreased(e: LogEvent, s: Settings) -> bool:
 
 
 def _expensive(e: LogEvent) -> bool:
-    m = EXPENSIVE.search(e.attributes.get("params", "") or e.message)
-    return bool(m) and not (m[1] and int(m[1]) < 5000)
+    """Deep paging, huge result sets or unbounded facets/groups. Every match is checked, so parameter order
+    does not matter (rows below 5000 alone is not expensive, but it must not hide a facet.limit=-1 after it)."""
+    text = e.attributes.get("params", "") or e.message
+    return any(not (m[1] and int(m[1]) < 5000) for m in EXPENSIVE.finditer(text))
 
 
 def _pause(e: LogEvent) -> float:
@@ -111,7 +113,8 @@ def signal_id(*parts) -> str:
 
 
 def _bursts(evs: list[LogEvent], gap_s: int) -> list[list[LogEvent]]:
-    out, cur = [], []
+    out: list[list[LogEvent]] = []
+    cur: list[LogEvent] = []
     for e in sorted(evs, key=lambda x: x.timestamp):
         if cur and (e.timestamp - cur[-1].timestamp).total_seconds() > gap_s:
             out.append(cur)
@@ -127,7 +130,65 @@ def _target(evs: list[LogEvent]) -> Optional[str]:
     return hosts.most_common(1)[0][0] if hosts else None
 
 
+def _burst_metrics(burst: list[LogEvent]) -> dict:
+    metrics: dict = {}
+    pauses = [_pause(e) for e in burst if _pause(e)]
+    if pauses:
+        metrics["max_pause_ms"] = round(max(pauses), 1)
+        metrics["total_pause_ms"] = round(sum(pauses), 1)
+    heaps = [round(100 * e.attributes["heap_after_mb"] / e.attributes["heap_capacity_mb"], 1)
+             for e in burst if e.attributes.get("heap_after_mb") and e.attributes.get("heap_capacity_mb")]
+    if heaps:
+        metrics["max_heap_after_pct"] = max(heaps)
+    qt = [e.attributes["qtime_ms"] for e in burst if e.attributes.get("qtime_ms")]
+    if qt:
+        metrics["max_qtime_ms"], metrics["median_qtime_ms"] = max(qt), int(statistics.median(qt))
+    cores = sorted({e.attributes["core"] for e in burst if e.attributes.get("core")})
+    if cores:
+        metrics["cores"] = cores
+    return metrics
+
+
+def _burst_detail(burst: list[LogEvent], start: datetime, metrics: dict) -> str:
+    span = f"between {start:%H:%M:%S} and {burst[-1].timestamp:%H:%M:%S} UTC"
+    if "max_pause_ms" in metrics:
+        heap = f", heap after GC up to {metrics['max_heap_after_pct']}%" if "max_heap_after_pct" in metrics else ""
+        return f"{len(burst)} pause(s) {span}, longest {metrics['max_pause_ms']} ms{heap}"
+    detail = f"{len(burst)} record(s) {span}"
+    if "max_qtime_ms" in metrics:
+        detail += f", QTime median {metrics['median_qtime_ms']} ms / max {metrics['max_qtime_ms']} ms"
+    return detail
+
+
+def _peer_context(rtype: str, node: str, burst: list[LogEvent], metrics: dict) -> tuple[str | None, str]:
+    """Which peer a timeout was aimed at, or which shards a leader election moved: (target node, extra detail)."""
+    if rtype == "REMOTE_TIMEOUT":
+        target = _target(burst)
+        return target, f"; requests to {target} timed out" if target else ""
+    if rtype == "LEADER_ELECTION":
+        won = sorted({m[1] for e in burst if (m := re.search(r"I am the new leader: \S+ (\S+)", e.message))})
+        if won:
+            metrics["became_leader_for"] = won
+            return None, f"; {node} became leader for {', '.join(won)}"
+        moved = _target(burst)
+        return None, f"; observed leader moving to {moved}" if moved else ""
+    return None, ""
+
+
+def _burst_signal(r: EventRule, node: str, burst: list[LogEvent], s: Settings) -> Signal:
+    first = burst[0]
+    start = first.timestamp - timedelta(milliseconds=_pause(first)) if _pause(first) else first.timestamp
+    metrics = _burst_metrics(burst)
+    target, extra = _peer_context(r.type, node, burst, metrics)
+    return Signal(signal_id=signal_id(r.type, node, int(start.timestamp())), cluster_id=s.cluster_id, node_id=node,
+                  signal_type=r.type, category=r.category, severity=r.severity_fn(burst, s) if r.severity_fn else r.severity,
+                  start=start, end=burst[-1].timestamp, count=len(burst), title=r.title,
+                  detail=_burst_detail(burst, start, metrics) + extra, metrics=metrics,
+                  event_ids=[e.event_id for e in burst][:300], target_node=target, method="rule")
+
+
 def event_signals(events: list[LogEvent], s: Settings) -> tuple[list[Signal], set[str]]:
+    """Match single records against the known failure signatures and group them into bursts per node."""
     matched: dict[tuple[str, str], list[LogEvent]] = defaultdict(list)
     classified: set[str] = set()
     for e in events:
@@ -139,51 +200,7 @@ def event_signals(events: list[LogEvent], s: Settings) -> tuple[list[Signal], se
     for (rtype, node), evs in matched.items():
         r = RULES_BY_TYPE[rtype]
         need = r.min_count(s) if callable(r.min_count) else r.min_count
-        for burst in _bursts(evs, s.burst_gap_s):
-            if len(burst) < need:
-                continue
-            sev = r.severity_fn(burst, s) if r.severity_fn else r.severity
-            first = burst[0]
-            start = first.timestamp - timedelta(milliseconds=_pause(first)) if _pause(first) else first.timestamp
-            metrics: dict = {}
-            pauses = [_pause(e) for e in burst if _pause(e)]
-            if pauses:
-                metrics["max_pause_ms"] = round(max(pauses), 1)
-                metrics["total_pause_ms"] = round(sum(pauses), 1)
-            heaps = [round(100 * e.attributes["heap_after_mb"] / e.attributes["heap_capacity_mb"], 1)
-                     for e in burst if e.attributes.get("heap_after_mb") and e.attributes.get("heap_capacity_mb")]
-            if heaps:
-                metrics["max_heap_after_pct"] = max(heaps)
-            qt = [e.attributes["qtime_ms"] for e in burst if e.attributes.get("qtime_ms")]
-            if qt:
-                metrics["max_qtime_ms"], metrics["median_qtime_ms"] = max(qt), int(statistics.median(qt))
-            cores = sorted({e.attributes["core"] for e in burst if e.attributes.get("core")})
-            if cores:
-                metrics["cores"] = cores
-            detail = f"{len(burst)} record(s) between {start:%H:%M:%S} and {burst[-1].timestamp:%H:%M:%S} UTC"
-            if pauses:
-                detail = (f"{len(burst)} pause(s) between {start:%H:%M:%S} and {burst[-1].timestamp:%H:%M:%S} UTC, "
-                          f"longest {metrics['max_pause_ms']} ms" +
-                          (f", heap after GC up to {metrics['max_heap_after_pct']}%" if heaps else ""))
-            elif qt:
-                detail += f", QTime median {metrics['median_qtime_ms']} ms / max {metrics['max_qtime_ms']} ms"
-            target = None
-            if rtype == "REMOTE_TIMEOUT":
-                target = _target(burst)
-                if target:
-                    detail += f"; requests to {target} timed out"
-            if rtype == "LEADER_ELECTION":
-                won = sorted({m[1] for e in burst if (m := re.search(r"I am the new leader: \S+ (\S+)", e.message))})
-                moved = _target(burst)
-                if won:
-                    metrics["became_leader_for"] = won
-                    detail += f"; {node} became leader for {', '.join(won)}"
-                elif moved:
-                    detail += f"; observed leader moving to {moved}"
-            out.append(Signal(signal_id=signal_id(rtype, node, int(start.timestamp())), cluster_id=s.cluster_id, node_id=node,
-                              signal_type=rtype, category=r.category, severity=sev, start=start, end=burst[-1].timestamp,
-                              count=len(burst), title=r.title, detail=detail, metrics=metrics,
-                              event_ids=[e.event_id for e in burst][:300], target_node=target, method="rule"))
+        out += [_burst_signal(r, node, burst, s) for burst in _bursts(evs, s.burst_gap_s) if len(burst) >= need]
     return out, classified
 
 
@@ -203,7 +220,7 @@ def _runs(flags: list[tuple[int, bool]], max_gap: int):
     return runs
 
 
-def _metric_signal(s: Settings, node, typ, cat, title, rows, idx, sev, metrics, detail, method) -> Signal:
+def _metric_signal(s: Settings, node, typ, cat, title, rows, idx, sev: Severity, metrics, detail, method) -> Signal:
     start = datetime.fromtimestamp(rows[idx[0]]["epoch"], tz=timezone.utc)
     end = datetime.fromtimestamp(rows[idx[-1]]["epoch"] + s.metric_window_s - 1, tz=timezone.utc)
     return Signal(signal_id=signal_id(typ, node, int(start.timestamp())), cluster_id=s.cluster_id, node_id=node,
