@@ -291,7 +291,9 @@ def summarise(label: str, is_rules: bool, incidents: list[dict]) -> dict:
             "avg_latency_s": round(sum(p["latency_s"] for p in scored) / len(scored), 1) if scored else None,
             "tokens": f"{sum(p['tokens_in'] for p in per):,}/{sum(p['tokens_out'] for p in per):,}",
             "consistent_incidents": f"{sum(stable)}/{len(stable)}" if stable else None,
-            "per_incident": [i["runs"][0] for i in incidents], "incidents": incidents}
+            # show an answer the provider actually wrote, when there is one
+            "per_incident": [next((r for r in i["runs"] if is_rules or r["source"] == "llm"), i["runs"][0]) for i in incidents],
+            "incidents": incidents}
 
 
 def eval_rca(models: list[str], work: Path, base: Settings, seed: int = 42, repeats: int = 1) -> list[dict]:

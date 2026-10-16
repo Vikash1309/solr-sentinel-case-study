@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T09:52:52.970630+00:00",
+  "generated_at": "2026-10-16T10:17:46.317349+00:00",
   "seeds": [
     1,
     2,
@@ -1409,7 +1409,7 @@
       "root_node_named": 1.0,
       "severity_kept": 1.0,
       "unverified_numbers": 0,
-      "avg_latency_s": 0.5,
+      "avg_latency_s": 0.0,
       "tokens": "0/0",
       "consistent_incidents": null,
       "per_incident": [
@@ -1426,7 +1426,7 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "medium",
-          "latency_s": 1.6,
+          "latency_s": 0.0,
           "tokens_in": 0,
           "tokens_out": 0,
           "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
@@ -1444,7 +1444,7 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "medium",
-          "latency_s": 0.3,
+          "latency_s": 0.0,
           "tokens_in": 0,
           "tokens_out": 0,
           "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
@@ -1503,7 +1503,7 @@
               "has_diagnostic_first": true,
               "unverified_numbers": 0,
               "confidence": "medium",
-              "latency_s": 1.6,
+              "latency_s": 0.0,
               "tokens_in": 0,
               "tokens_out": 0,
               "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
@@ -1530,7 +1530,7 @@
               "has_diagnostic_first": true,
               "unverified_numbers": 0,
               "confidence": "medium",
-              "latency_s": 0.3,
+              "latency_s": 0.0,
               "tokens_in": 0,
               "tokens_out": 0,
               "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
@@ -1599,21 +1599,21 @@
     },
     {
       "model": "gemini:gemini-3.8-flash",
-      "n": 4,
-      "llm_answers": 3,
-      "first_try_valid": 3,
-      "fallbacks": 1,
+      "n": 12,
+      "llm_answers": 9,
+      "first_try_valid": 9,
+      "fallbacks": 3,
       "fallback_reasons": {
-        "llm_unavailable": 1
+        "llm_unavailable": 3
       },
       "root_cause_accuracy": 1.0,
       "root_cited": 1.0,
       "root_node_named": 1.0,
       "severity_kept": 1.0,
       "unverified_numbers": 0,
-      "avg_latency_s": 23.2,
-      "tokens": "26,971/4,071",
-      "consistent_incidents": null,
+      "avg_latency_s": 14.8,
+      "tokens": "55,117/11,393",
+      "consistent_incidents": "3/3",
       "per_incident": [
         {
           "scenario": "S1",
@@ -1628,10 +1628,10 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "high",
-          "latency_s": 23.8,
+          "latency_s": 9.0,
           "tokens_in": 3968,
-          "tokens_out": 1297,
-          "hypothesis": "An indexing client issued rapid explicit commits (59/min) opening new searchers on products_shard2_replica_n10, exceeding the maxWarmingSearchers limit (=2), rejecting commits, and invalidating query caches."
+          "tokens_out": 1293,
+          "hypothesis": "An indexing client issued rapid explicit commits (59/min) with openSearcher=true faster than searcher warming could finish, exceeding maxWarmingSearchers=2, triggering HTTP 503 commit rejections and degrading p95 query latency by continuously evicting caches."
         },
         {
           "scenario": "S2",
@@ -1646,16 +1646,16 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "high",
-          "latency_s": 26.8,
+          "latency_s": 25.7,
           "tokens_in": 20592,
-          "tokens_out": 1831,
-          "hypothesis": "Expensive queries (deep paging with large rows and unbounded facet limits) caused excessive humongous allocations directly into the G1 old generation, driving heap occupancy to 99.1% and inducing a stop-the-world Full GC pause of 18234.6 ms that exceeded the 15000 ms ZooKeeper client timeout, resulting in session expiry and replica degradation on solr-node2."
+          "tokens_out": 1917,
+          "hypothesis": "Expensive queries with deep paging and unbounded faceting induced heavy humongous allocations, driving G1 heap exhaustion and an 18234.6 ms Full GC pause on solr-node2 that exceeded the 15000 ms zkClientTimeout, triggering ZooKeeper session expiry and cluster-wide failover."
         },
         {
           "scenario": "S3",
-          "source": "rules",
-          "reason": "llm_unavailable",
-          "first_try_valid": false,
+          "source": "llm",
+          "reason": null,
+          "first_try_valid": true,
           "valid": true,
           "concepts_ok": true,
           "root_cited": true,
@@ -1663,11 +1663,11 @@
           "severity_kept": true,
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
-          "confidence": "low",
-          "latency_s": 22.3,
-          "tokens_in": 0,
-          "tokens_out": 0,
-          "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+          "confidence": "high",
+          "latency_s": 28.1,
+          "tokens_in": 5933,
+          "tokens_out": 1312,
+          "hypothesis": "Expensive queries utilizing deep paging (e.g., start=140000, rows=10000..50000) and unbounded faceting (facet.limit=-1) generated humongous object allocations, causing high G1 heap occupancy, severe GC pause times up to 1312.5 ms, and query latency degradation."
         },
         {
           "scenario": "S4",
@@ -1682,10 +1682,10 @@
           "has_diagnostic_first": true,
           "unverified_numbers": 0,
           "confidence": "high",
-          "latency_s": 18.9,
+          "latency_s": 13.4,
           "tokens_in": 2411,
-          "tokens_out": 943,
-          "hypothesis": "GC log telemetry pipeline failure or collector/shipping process issue on solr-node3 causing stale GC metrics while the Solr process remained operational."
+          "tokens_out": 906,
+          "hypothesis": "GC log collection or log shipping pipeline failure on solr-node3 prevented GC telemetry from reaching the monitoring pipeline, while the Solr process remained active."
         }
       ],
       "incidents": [
@@ -1705,20 +1705,76 @@
               "has_diagnostic_first": true,
               "unverified_numbers": 0,
               "confidence": "high",
-              "latency_s": 23.8,
+              "latency_s": 9.0,
               "tokens_in": 3968,
-              "tokens_out": 1297,
-              "hypothesis": "An indexing client issued rapid explicit commits (59/min) opening new searchers on products_shard2_replica_n10, exceeding the maxWarmingSearchers limit (=2), rejecting commits, and invalidating query caches."
+              "tokens_out": 1293,
+              "hypothesis": "An indexing client issued rapid explicit commits (59/min) with openSearcher=true faster than searcher warming could finish, exceeding maxWarmingSearchers=2, triggering HTTP 503 commit rejections and degrading p95 query latency by continuously evicting caches."
+            },
+            {
+              "scenario": "S1",
+              "source": "llm",
+              "reason": null,
+              "first_try_valid": true,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "high",
+              "latency_s": 7.6,
+              "tokens_in": 3968,
+              "tokens_out": 1145,
+              "hypothesis": "An indexing client issued rapid explicit commits with openSearcher=true faster than searchers could warm on products_shard2_replica_n10, exhausting the maxWarmingSearchers limit and continuously invalidating caches."
+            },
+            {
+              "scenario": "S1",
+              "source": "llm",
+              "reason": null,
+              "first_try_valid": true,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "high",
+              "latency_s": 15.4,
+              "tokens_in": 3968,
+              "tokens_out": 1292,
+              "hypothesis": "Frequent explicit commits with openSearcher=true arrived faster than new searchers could complete warming, causing overlapping searchers, exceeding the maxWarmingSearchers limit, discarding query caches, and rejecting subsequent commit requests."
             }
           ],
           "consistency": {
-            "llm_runs": 1,
-            "consistent": null
+            "llm_runs": 3,
+            "consistent": true,
+            "verdict_agreement": 1.0,
+            "confidence_agreement": 1.0
           }
         },
         {
           "scenario": "S2",
           "runs": [
+            {
+              "scenario": "S2",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 20.3,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
+            },
             {
               "scenario": "S2",
               "source": "llm",
@@ -1732,10 +1788,28 @@
               "has_diagnostic_first": true,
               "unverified_numbers": 0,
               "confidence": "high",
-              "latency_s": 26.8,
+              "latency_s": 25.7,
               "tokens_in": 20592,
-              "tokens_out": 1831,
-              "hypothesis": "Expensive queries (deep paging with large rows and unbounded facet limits) caused excessive humongous allocations directly into the G1 old generation, driving heap occupancy to 99.1% and inducing a stop-the-world Full GC pause of 18234.6 ms that exceeded the 15000 ms ZooKeeper client timeout, resulting in session expiry and replica degradation on solr-node2."
+              "tokens_out": 1917,
+              "hypothesis": "Expensive queries with deep paging and unbounded faceting induced heavy humongous allocations, driving G1 heap exhaustion and an 18234.6 ms Full GC pause on solr-node2 that exceeded the 15000 ms zkClientTimeout, triggering ZooKeeper session expiry and cluster-wide failover."
+            },
+            {
+              "scenario": "S2",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "medium",
+              "latency_s": 19.5,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
             }
           ],
           "consistency": {
@@ -1748,9 +1822,9 @@
           "runs": [
             {
               "scenario": "S3",
-              "source": "rules",
-              "reason": "llm_unavailable",
-              "first_try_valid": false,
+              "source": "llm",
+              "reason": null,
+              "first_try_valid": true,
               "valid": true,
               "concepts_ok": true,
               "root_cited": true,
@@ -1758,16 +1832,54 @@
               "severity_kept": true,
               "has_diagnostic_first": true,
               "unverified_numbers": 0,
-              "confidence": "low",
-              "latency_s": 22.3,
-              "tokens_in": 0,
-              "tokens_out": 0,
-              "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+              "confidence": "high",
+              "latency_s": 28.1,
+              "tokens_in": 5933,
+              "tokens_out": 1312,
+              "hypothesis": "Expensive queries utilizing deep paging (e.g., start=140000, rows=10000..50000) and unbounded faceting (facet.limit=-1) generated humongous object allocations, causing high G1 heap occupancy, severe GC pause times up to 1312.5 ms, and query latency degradation."
+            },
+            {
+              "scenario": "S3",
+              "source": "llm",
+              "reason": null,
+              "first_try_valid": true,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "high",
+              "latency_s": 9.3,
+              "tokens_in": 5933,
+              "tokens_out": 1333,
+              "hypothesis": "Expensive search queries featuring deep paging (e.g., start=140000, rows=10000..50000) and unbounded faceting (facet.limit=-1, facet.pivot) caused massive humongous object allocations directly into G1 old generation, driving heap occupancy above 85% and inducing long GC pauses that degraded query latency."
+            },
+            {
+              "scenario": "S3",
+              "source": "llm",
+              "reason": null,
+              "first_try_valid": true,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "high",
+              "latency_s": 9.5,
+              "tokens_in": 5933,
+              "tokens_out": 1312,
+              "hypothesis": "Expensive queries utilizing deep paging (large start and rows) and unbounded/pivot faceting (facet.limit=-1) triggered frequent humongous G1 allocations into the old generation, exhausting available heap regions and leading to long GC pauses and elevated query latency."
             }
           ],
           "consistency": {
-            "llm_runs": 0,
-            "consistent": null
+            "llm_runs": 3,
+            "consistent": true,
+            "verdict_agreement": 1.0,
+            "confidence_agreement": 1.0
           }
         },
         {
@@ -1786,20 +1898,56 @@
               "has_diagnostic_first": true,
               "unverified_numbers": 0,
               "confidence": "high",
-              "latency_s": 18.9,
+              "latency_s": 13.4,
               "tokens_in": 2411,
-              "tokens_out": 943,
-              "hypothesis": "GC log telemetry pipeline failure or collector/shipping process issue on solr-node3 causing stale GC metrics while the Solr process remained operational."
+              "tokens_out": 906,
+              "hypothesis": "GC log collection or log shipping pipeline failure on solr-node3 prevented GC telemetry from reaching the monitoring pipeline, while the Solr process remained active."
+            },
+            {
+              "scenario": "S4",
+              "source": "llm",
+              "reason": null,
+              "first_try_valid": true,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "high",
+              "latency_s": 15.5,
+              "tokens_in": 2411,
+              "tokens_out": 883,
+              "hypothesis": "A telemetry collector or log-shipping failure prevented GC log records from solr-node3 from reaching the telemetry pipeline while the Solr JVM remained operational."
+            },
+            {
+              "scenario": "S4",
+              "source": "rules",
+              "reason": "llm_unavailable",
+              "first_try_valid": false,
+              "valid": true,
+              "concepts_ok": true,
+              "root_cited": true,
+              "root_node_named": true,
+              "severity_kept": true,
+              "has_diagnostic_first": true,
+              "unverified_numbers": 0,
+              "confidence": "low",
+              "latency_s": 16.4,
+              "tokens_in": 0,
+              "tokens_out": 0,
+              "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
             }
           ],
           "consistency": {
-            "llm_runs": 1,
-            "consistent": null
+            "llm_runs": 2,
+            "consistent": true,
+            "verdict_agreement": 1.0,
+            "confidence_agreement": 1.0
           }
         }
-      ],
-      "source_run": "2026-10-16 05:45 UTC",
-      "source_run_note": "the Gemini row comes from the evaluation run of 2026-10-16 05:45 UTC (same seed, incidents and prompt version), re-scored with the current rules. Each incident was analysed once in that run, so consistency across repeats was not measured. Later runs could not reach Gemini because the free-tier quota (20 requests a day) was used up."
+      ]
     }
   ],
   "injection": [

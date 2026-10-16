@@ -24,7 +24,8 @@ report is shown instead.
 | Every threshold moved ±25 %, one at a time | 22 of 24 variations pass everything; the 2 that don't show the heap threshold needs tuning on real logs |
 | Time to detect | 1–18 s for the three log-pattern problems; about 6 min for a silent log source (by design) |
 | Malformed log lines kept for review / re-reading all logs | 4/4 / 0 duplicates |
-| Root cause named correctly, rules / Gemini | 4/4 / 3 of 3 answered in the first run (latest run blocked by the free-tier quota) |
+| Root cause named correctly, rules / Gemini | 4/4 / 9 of 9 Gemini answers (3 analyses per incident; 3 more calls failed on the provider side and fell back to rules) |
+| Gemini answers consistent across repeats | 3 of 3 incidents with more than one answer |
 | Tests / type check / complexity | 59 passing / mypy clean / no function above 15 |
 
 These numbers come from synthetic logs written by the same author as the rules: they show the pipeline works as

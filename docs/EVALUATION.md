@@ -1,6 +1,6 @@
 # Evaluation
 
-Generated 2026-10-16 09:52 UTC by `python run.py eval` with seeds 1, 2, 3, 4, 5. Expected answers: [eval/ground_truth.json](../eval/ground_truth.json). Raw results: `eval/results/latest.json`.
+Generated 2026-10-16 10:17 UTC by `python run.py eval` with seeds 1, 2, 3, 4, 5. Expected answers: [eval/ground_truth.json](../eval/ground_truth.json). Raw results: `eval/results/latest.json`.
 
 Every detection mode below is scored by the same function, so the numbers are comparable.
 
@@ -72,12 +72,11 @@ The same 4 incidents (seed 42) for every provider; this run asked each LLM 3 tim
 
 | Provider | Answers | From LLM | Valid 1st try | Fallbacks | Root-cause accuracy | Root signal cited | Root node named | Severity kept | Unverified numbers | Consistent across repeats | Avg latency | Tokens in/out |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| rules (deterministic) | 4 | 0 | 0 | n/a | 100% | 100% | 100% | 100% | 0 | – | 0.5 s | 0/0 |
-| gemini:gemini-3.8-flash (run of 2026-10-16 05:45 UTC) | 4 | 3 | 3 | 1 | 100% | 100% | 100% | 100% | 0 | – | 23.2 s | 26,971/4,071 |
+| rules (deterministic) | 4 | 0 | 0 | n/a | 100% | 100% | 100% | 100% | 0 | – | 0.0 s | 0/0 |
+| gemini:gemini-3.8-flash | 12 | 9 | 9 | 3 | 100% | 100% | 100% | 100% | 0 | 3/3 | 14.8 s | 55,117/11,393 |
 
 *Root-cause accuracy*: the explanation names the expected concepts (for example expensive queries, GC and heap, ZooKeeper). *Consistent across repeats*: incidents where every LLM answer reached the same verdict on concepts, root signal and root node. A *fallback* is an LLM call that failed (for example a rate limit) and was replaced by the rules-based report. For an LLM, accuracy and latency count only the answers the LLM actually wrote; fallbacks are reported separately, never scored as the LLM's.
 
-*Note:* the Gemini row comes from the evaluation run of 2026-10-16 05:45 UTC (same seed, incidents and prompt version), re-scored with the current rules. Each incident was analysed once in that run, so consistency across repeats was not measured. Later runs could not reach Gemini because the free-tier quota (20 requests a day) was used up.
 
 ### The explanations
 
@@ -85,10 +84,10 @@ The same 4 incidents (seed 42) for every provider; this run asked each LLM 3 tim
 - **rules (deterministic) / S2** (rules, confidence medium): Heap exhaustion → long GC pause → ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure.
 - **rules (deterministic) / S3** (rules, confidence low): Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms).
 - **rules (deterministic) / S4** (rules, confidence low): Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min)).
-- **gemini:gemini-3.8-flash / S1** (llm, confidence high): An indexing client issued rapid explicit commits (59/min) opening new searchers on products_shard2_replica_n10, exceeding the maxWarmingSearchers limit (=2), rejecting commits, and invalidating query caches.
-- **gemini:gemini-3.8-flash / S2** (llm, confidence high): Expensive queries (deep paging with large rows and unbounded facet limits) caused excessive humongous allocations directly into the G1 old generation, driving heap occupancy to 99.1% and inducing a stop-the-world Full GC pause of 18234.6 ms that exceeded the 15000 ms ZooKeeper client timeout, resulting in session expiry and replica degradation on solr-node2.
-- **gemini:gemini-3.8-flash / S3** (rules, confidence low): Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms).
-- **gemini:gemini-3.8-flash / S4** (llm, confidence high): GC log telemetry pipeline failure or collector/shipping process issue on solr-node3 causing stale GC metrics while the Solr process remained operational.
+- **gemini:gemini-3.8-flash / S1** (llm, confidence high): An indexing client issued rapid explicit commits (59/min) with openSearcher=true faster than searcher warming could finish, exceeding maxWarmingSearchers=2, triggering HTTP 503 commit rejections and degrading p95 query latency by continuously evicting caches.
+- **gemini:gemini-3.8-flash / S2** (llm, confidence high): Expensive queries with deep paging and unbounded faceting induced heavy humongous allocations, driving G1 heap exhaustion and an 18234.6 ms Full GC pause on solr-node2 that exceeded the 15000 ms zkClientTimeout, triggering ZooKeeper session expiry and cluster-wide failover.
+- **gemini:gemini-3.8-flash / S3** (llm, confidence high): Expensive queries utilizing deep paging (e.g., start=140000, rows=10000..50000) and unbounded faceting (facet.limit=-1) generated humongous object allocations, causing high G1 heap occupancy, severe GC pause times up to 1312.5 ms, and query latency degradation.
+- **gemini:gemini-3.8-flash / S4** (llm, confidence high): GC log collection or log shipping pipeline failure on solr-node3 prevented GC telemetry from reaching the monitoring pipeline, while the Solr process remained active.
 
 ## 6. Prompt injection
 
