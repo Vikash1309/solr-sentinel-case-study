@@ -27,7 +27,6 @@ KEY = os.getenv("SENTINEL_API_KEY", "")
 
 STATE_COLOR = {"healthy": "#2e8b57", "degraded": "#c98a12", "critical": "#c8372d", "unknown": "#7b8794"}
 SEV_COLOR = {"critical": "#c8372d", "warning": "#c98a12", "info": "#2c6db5"}
-REL_COLOR = {"observed": "#2e8b57", "inferred": "#2c6db5", "temporal": "#7b8794"}
 
 st.set_page_config(page_title="Solr Sentinel", page_icon="🛰️", layout="wide")
 st.markdown("""<style>
@@ -250,7 +249,7 @@ with t_inc:
                         f"{esc(rca['created_at'][:19].replace('T', ' '))} UTC"
                         + (f" · AI RCA not used: <b>{esc(rca['reason'].replace('_', ' '))}</b>" if rca.get("reason") else "")
                         + "</span>", unsafe_allow_html=True)
-        rc1, rc2, rc3 = st.columns([1, 1, 2])
+        rc1, rc2, _spacer = st.columns([1, 1, 2])
         model_override = rc2.text_input("Model override (optional)", "", label_visibility="collapsed",
                                         placeholder="model override (optional)")
         if rc1.button("Re-analyse (new RCA version)"):

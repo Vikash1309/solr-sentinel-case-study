@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 import logging
 import threading
-import time
 from collections import defaultdict
 from datetime import datetime, timezone
 
@@ -77,11 +76,6 @@ class Metrics:
             s[0] += value
             s[1] += 1
 
-    def snapshot(self) -> dict:
-        with self._lock:
-            return {"counters": {f"{n}{dict(l)}": v for (n, l), v in self.counters.items()},
-                    "gauges": {f"{n}{dict(l)}": v for (n, l), v in self.gauges.items()}}
-
     def render_prometheus(self) -> str:
         def lbl(labels):
             return "{" + ",".join(f'{k}="{v}"' for k, v in labels) + "}" if labels else ""
@@ -107,15 +101,3 @@ class Metrics:
 
 METRICS = Metrics()
 
-
-class Timer:
-    def __init__(self, name: str, **labels):
-        self.name, self.labels = name, labels
-
-    def __enter__(self):
-        self.t0 = time.perf_counter()
-        return self
-
-    def __exit__(self, *exc):
-        self.elapsed = time.perf_counter() - self.t0
-        METRICS.observe(self.name, self.elapsed, **self.labels)

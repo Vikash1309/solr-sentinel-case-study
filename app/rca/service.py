@@ -69,12 +69,6 @@ class RCAService:
                 METRICS.set("sentinel_rca_queue_depth", self.q.qsize())
                 self.q.task_done()
 
-    def drain(self, timeout: float = 600):
-        """Wait until the queue is empty (CLI / tests)."""
-        t0 = time.time()
-        while (self.q.unfinished_tasks and time.time() - t0 < timeout):
-            time.sleep(0.05)
-
     # ------------------------------------------------------------------------------------------ policy
     def needs_rca(self, inc: Incident, signals: dict[str, Signal]) -> bool:
         latest = self.repo.rca(inc.incident_id)

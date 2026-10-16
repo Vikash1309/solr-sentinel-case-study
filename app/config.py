@@ -86,7 +86,6 @@ class Settings:
     reanalyze_per_minute: int = 5
     max_upload_mb: int = 50
     poll_interval_s: int = 15
-    api_url: str = os.getenv("SENTINEL_API_URL", "http://127.0.0.1:8000")
 
 
 def load_settings(**overrides) -> Settings:

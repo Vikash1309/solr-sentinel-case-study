@@ -35,9 +35,6 @@ class LogEvent(BaseModel):
     parser_version: str = "1.0"
     raw: str = ""                      # original record (incl. folded stack-trace lines) for forensics
 
-    def attr(self, key: str, default=None):
-        return self.attributes.get(key, default)
-
 
 class ParseErrorRecord(BaseModel):
     cluster_id: str
