@@ -1,0 +1,30 @@
+[project]
+name = "solr-sentinel"
+version = "2.0.0"
+description = "AI-powered Solr observability and root cause analysis"
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+extend-exclude = ["sample_data"]
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle errors, import sorting, bugbear (likely bugs), bandit (security)
+select = ["F", "E", "W", "I", "B", "S"]
+ignore = [
+  "E501",   # long lines are mostly log-line fixtures and messages; readability is handled in review
+  "E741",   # single-letter names like `l` in short comprehensions
+  "S101",   # assert is fine in tests
+  "S311",   # random is used for synthetic test data, not security
+  "S310",   # urllib calls go to configured LLM endpoints only
+  "S603", "S607",  # run.py starts uvicorn/streamlit subprocesses with fixed arguments
+  "S104",   # binding 0.0.0.0 is required inside containers
+  "B008",   # FastAPI Depends()/File() in defaults is the framework's idiom
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106", "S108"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

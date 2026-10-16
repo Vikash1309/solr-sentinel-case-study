@@ -1,0 +1,61 @@
+{
+  "description": "Labels for the scenarios injected by scripts/generate_synthetic_logs.py (UTC, 2026-10-15). Random seeds change background noise only.",
+  "scenarios": [
+    {
+      "id": "S1", "name": "Commit storm from an indexing client",
+      "window": ["10:10", "10:15"], "nodes": ["solr-node3"],
+      "expected_pattern": "COMMIT_STORM", "expected_severity": "warning",
+      "expected_root": {"type": "EXCESSIVE_COMMITS", "node": "solr-node3"},
+      "root_cause_keywords": [["commit"]],
+      "must_detect": [
+        {"type": "EXCESSIVE_COMMITS", "node": "solr-node3"},
+        {"type": "OVERLAPPING_SEARCHERS", "node": "solr-node3"},
+        {"type": "SEARCHER_LIMIT", "node": "solr-node3"}
+      ]
+    },
+    {
+      "id": "S2", "name": "Expensive queries -> heap exhaustion -> 18 s Full GC -> ZooKeeper session expiry -> failover",
+      "window": ["10:18", "10:43"], "nodes": ["solr-node1", "solr-node2", "solr-node3"],
+      "expected_pattern": "HEAP_EXHAUSTION_GC_STALL_ZK_EXPIRY", "expected_severity": "critical",
+      "expected_root": {"type": "EXPENSIVE_QUERIES", "node": "solr-node2"},
+      "root_cause_keywords": [["quer"], ["gc", "garbage", "heap"], ["zookeeper", "zk"]],
+      "must_detect": [
+        {"type": "EXPENSIVE_QUERIES", "node": "solr-node2"},
+        {"type": "GC_HUMONGOUS", "node": "solr-node2"},
+        {"type": "GC_HEAP_PRESSURE", "node": "solr-node2"},
+        {"type": "GC_EVAC_FAILURE", "node": "solr-node2"},
+        {"type": "GC_FULL", "node": "solr-node2"},
+        {"type": "GC_PAUSE_EXCEEDS_ZK_TIMEOUT", "node": "solr-node2"},
+        {"type": "ZK_SESSION_EXPIRED", "node": "solr-node2"},
+        {"type": "REPLICA_RECOVERY", "node": "solr-node2"},
+        {"type": "LEADER_ELECTION", "node": "solr-node1"},
+        {"type": "NO_LEADER", "node": "solr-node3"},
+        {"type": "REMOTE_TIMEOUT", "node": "solr-node1"},
+        {"type": "REMOTE_TIMEOUT", "node": "solr-node3"}
+      ]
+    },
+    {
+      "id": "S3", "name": "Recurrence of the expensive reporting workload (open at end of data)",
+      "window": ["10:55", "11:00"], "nodes": ["solr-node2"],
+      "expected_pattern": "EXPENSIVE_QUERY_MEMORY_PRESSURE", "expected_severity": "warning",
+      "expected_root": {"type": "EXPENSIVE_QUERIES", "node": "solr-node2"},
+      "expected_recurrence_of": "S2", "expected_status": "open",
+      "root_cause_keywords": [["quer"]],
+      "must_detect": [
+        {"type": "EXPENSIVE_QUERIES", "node": "solr-node2"},
+        {"type": "GC_HUMONGOUS", "node": "solr-node2"},
+        {"type": "GC_HEAP_PRESSURE", "node": "solr-node2"}
+      ]
+    },
+    {
+      "id": "S4", "name": "GC telemetry gap on solr-node3 (collector stops, Solr log continues)",
+      "window": ["10:46", "11:00"], "nodes": ["solr-node3"],
+      "expected_pattern": "TELEMETRY_GAP", "expected_severity": "warning",
+      "expected_root": {"type": "TELEMETRY_STALE", "node": "solr-node3"},
+      "expected_node_state": {"solr-node3": "unknown"},
+      "root_cause_keywords": [["telemetry", "collector", "gc log", "shipping"]],
+      "must_detect": [{"type": "TELEMETRY_STALE", "node": "solr-node3"}]
+    }
+  ],
+  "expected_parse_errors": 4
+}

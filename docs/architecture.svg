@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 790" role="img" aria-labelledby="t d">
+  <title id="t">Solr Sentinel architecture</title>
+  <desc id="d">Solr and GC logs flow through a deterministic pipeline (ingest, parse, detect, correlate, assess health) that stores results. Incidents go to a background AI root-cause analysis step (evidence package, read-only LLM, validation, rules fallback). A FastAPI service and a Streamlit dashboard present the results.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Inter, Helvetica, Arial, sans-serif; fill: #1f2937; }
+      .h  { font-size: 14px; font-weight: 600; }
+      .s  { font-size: 12px; fill: #4b5563; }
+      .xs { font-size: 10.5px; fill: #64748b; }
+      .zone { font-size: 11px; font-weight: 700; letter-spacing: .06em; fill: #475569; }
+      .ln { stroke: #475569; stroke-width: 1.5; fill: none; marker-end: url(#a); }
+      .src { fill: #ecfdf3; stroke: #2f9e63; }
+      .det { fill: #eef4ff; stroke: #3b6fd8; }
+      .ai  { fill: #f4f0ff; stroke: #7a5af5; }
+      .db  { fill: #f4f4f5; stroke: #71717a; }
+      .out { fill: #fff7e8; stroke: #d08a1a; }
+      .fb  { fill: #f8fafc; stroke: #94a3b8; stroke-dasharray: 5 4; }
+      rect.box { stroke-width: 1.4; }
+      .zoneb { fill: none; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 6 5; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="790" rx="14" fill="#ffffff"/>
+  <text x="30" y="36" style="font-size:20px;font-weight:700">Solr Sentinel · architecture</text>
+  <text x="30" y="58" class="s">Rules decide what happened. The LLM only explains it, and its answer is checked before anyone sees it.</text>
+
+  <!-- Sources -->
+  <text x="30" y="84" class="zone">LOG SOURCES</text>
+  <rect class="box src" x="30" y="94"  width="190" height="54" rx="8"/>
+  <text x="125" y="117" class="h" text-anchor="middle">solr-node1</text>
+  <text x="125" y="136" class="s" text-anchor="middle">solr.log · gc.log</text>
+  <rect class="box src" x="30" y="160" width="190" height="54" rx="8"/>
+  <text x="125" y="183" class="h" text-anchor="middle">solr-node2</text>
+  <text x="125" y="202" class="s" text-anchor="middle">solr.log · gc.log</text>
+  <rect class="box src" x="30" y="226" width="190" height="54" rx="8"/>
+  <text x="125" y="249" class="h" text-anchor="middle">solr-node3</text>
+  <text x="125" y="268" class="s" text-anchor="middle">solr.log · gc.log</text>
+  <rect class="box src" x="30" y="306" width="190" height="54" rx="8"/>
+  <text x="125" y="329" class="h" text-anchor="middle">Manual upload</text>
+  <text x="125" y="348" class="s" text-anchor="middle">POST /api/v1/logs/upload</text>
+
+  <path class="ln" d="M220,121 C250,121 250,132 278,132"/>
+  <path class="ln" d="M220,187 C252,187 250,136 278,134"/>
+  <path class="ln" d="M220,253 C256,253 252,140 278,136"/>
+  <path class="ln" d="M220,333 C260,333 254,144 278,138"/>
+
+  <!-- Legend -->
+  <text x="30" y="420" class="zone">LEGEND</text>
+  <rect class="box src" x="30" y="434" width="16" height="16" rx="3"/><text x="56" y="447" class="s">Input</text>
+  <rect class="box det" x="30" y="460" width="16" height="16" rx="3"/><text x="56" y="473" class="s">Deterministic code</text>
+  <rect class="box ai"  x="30" y="486" width="16" height="16" rx="3"/><text x="56" y="499" class="s">AI step (checked)</text>
+  <rect class="box db"  x="30" y="512" width="16" height="16" rx="3"/><text x="56" y="525" class="s">Storage</text>
+  <rect class="box out" x="30" y="538" width="16" height="16" rx="3"/><text x="56" y="551" class="s">What people use</text>
+  <rect class="box fb"  x="30" y="564" width="16" height="16" rx="3"/><text x="56" y="577" class="s">Fallback path</text>
+
+  <!-- Deterministic pipeline -->
+  <rect class="zoneb" x="262" y="70" width="316" height="544" rx="12"/>
+  <text x="280" y="88" class="zone">PIPELINE · EVERY 15 S · NO LLM</text>
+
+  <rect class="box det" x="280" y="98" width="280" height="80" rx="8"/>
+  <text x="420" y="122" class="h" text-anchor="middle">1 · Ingest</text>
+  <text x="420" y="142" class="s" text-anchor="middle">checkpoints · file rotation · no duplicates</text>
+  <text x="420" y="160" class="s" text-anchor="middle">bad lines kept in a parse-error store</text>
+
+  <rect class="box det" x="280" y="200" width="280" height="80" rx="8"/>
+  <text x="420" y="224" class="h" text-anchor="middle">2 · Parse</text>
+  <text x="420" y="244" class="s" text-anchor="middle">Solr log4j2 · GC logs (JDK 8 and 9+)</text>
+  <text x="420" y="262" class="s" text-anchor="middle">secrets redacted → one event format</text>
+
+  <rect class="box det" x="280" y="302" width="280" height="80" rx="8"/>
+  <text x="420" y="326" class="h" text-anchor="middle">3 · Detect</text>
+  <text x="420" y="346" class="s" text-anchor="middle">21 log rules · thresholds · baselines</text>
+  <text x="420" y="364" class="s" text-anchor="middle">→ signals, each with a severity</text>
+
+  <rect class="box det" x="280" y="404" width="280" height="80" rx="8"/>
+  <text x="420" y="428" class="h" text-anchor="middle">4 · Correlate</text>
+  <text x="420" y="448" class="s" text-anchor="middle">cause → effect links across nodes</text>
+  <text x="420" y="466" class="s" text-anchor="middle">→ incidents · fixed severity · repeats</text>
+
+  <rect class="box det" x="280" y="506" width="280" height="80" rx="8"/>
+  <text x="420" y="530" class="h" text-anchor="middle">5 · Assess health</text>
+  <text x="420" y="550" class="s" text-anchor="middle">each node, incl. Unknown when logs stop</text>
+  <text x="420" y="568" class="s" text-anchor="middle">cluster: replicas · leaders · redundancy</text>
+
+  <path class="ln" d="M420,178 V198"/>
+  <path class="ln" d="M420,280 V300"/>
+  <path class="ln" d="M420,382 V402"/>
+  <path class="ln" d="M420,484 V504"/>
+
+  <!-- Storage -->
+  <rect class="box db" x="640" y="98" width="450" height="80" rx="8"/>
+  <text x="865" y="122" class="h" text-anchor="middle">Storage · SQLite</text>
+  <text x="865" y="142" class="s" text-anchor="middle">events · parse errors · signals · incidents · RCA versions</text>
+  <text x="865" y="160" class="xs" text-anchor="middle">production: OpenSearch · PostgreSQL · S3</text>
+  <path class="ln" d="M578,138 H638"/>
+  <text x="608" y="130" class="xs" text-anchor="middle">saved</text>
+
+  <!-- AI RCA -->
+  <rect class="zoneb" x="608" y="198" width="496" height="302" rx="12"/>
+  <text x="626" y="218" class="zone">ROOT-CAUSE ANALYSIS · BACKGROUND QUEUE</text>
+
+  <rect class="box ai" x="640" y="232" width="210" height="72" rx="8"/>
+  <text x="745" y="255" class="h" text-anchor="middle">Evidence package</text>
+  <text x="745" y="274" class="s" text-anchor="middle">≤ 25 items, each with an ID</text>
+  <text x="745" y="291" class="s" text-anchor="middle">signals · records · metrics</text>
+
+  <rect class="box ai" x="640" y="322" width="210" height="72" rx="8"/>
+  <text x="745" y="345" class="h" text-anchor="middle">LLM · read-only</text>
+  <text x="745" y="364" class="s" text-anchor="middle">dev: Gemini 3.8 Flash</text>
+  <text x="745" y="381" class="s" text-anchor="middle">prod: Claude on Bedrock</text>
+
+  <rect class="box ai" x="640" y="412" width="210" height="72" rx="8"/>
+  <text x="745" y="435" class="h" text-anchor="middle">Validate</text>
+  <text x="745" y="454" class="s" text-anchor="middle">valid JSON · real evidence IDs</text>
+  <text x="745" y="471" class="s" text-anchor="middle">severity unchanged · safe fixes</text>
+
+  <rect class="box out" x="880" y="232" width="210" height="72" rx="8"/>
+  <text x="985" y="255" class="h" text-anchor="middle">RCA report</text>
+  <text x="985" y="274" class="s" text-anchor="middle">root cause · impact</text>
+  <text x="985" y="291" class="s" text-anchor="middle">fixes need human approval</text>
+
+  <rect class="box fb" x="880" y="412" width="210" height="72" rx="8"/>
+  <text x="985" y="435" class="h" text-anchor="middle">Rules-based RCA</text>
+  <text x="985" y="454" class="s" text-anchor="middle">if the LLM fails, times out</text>
+  <text x="985" y="471" class="s" text-anchor="middle">or stays invalid</text>
+
+  <path class="ln" d="M745,304 V320"/>
+  <path class="ln" d="M745,394 V410"/>
+  <path class="ln" d="M850,436 H864 V268 H878"/>
+  <text x="858" y="356" class="xs" text-anchor="middle" transform="rotate(-90 858 356)">valid</text>
+  <path class="ln" d="M850,462 H878"/>
+  <path class="ln" d="M640,462 H624 V358 H638"/>
+  <text x="618" y="412" class="xs" text-anchor="middle" transform="rotate(-90 618 412)">1 retry</text>
+  <path class="ln" d="M985,412 V306"/>
+  <text x="992" y="362" class="xs">same format</text>
+  <path class="ln" d="M985,232 V180"/>
+  <text x="992" y="210" class="xs">versioned</text>
+
+  <path class="ln" d="M560,444 H594 V268 H638"/>
+  <text x="588" y="356" class="xs" text-anchor="middle" transform="rotate(-90 588 356)">incidents</text>
+
+  <!-- Outputs -->
+  <rect class="box out" x="640" y="528" width="210" height="80" rx="8"/>
+  <text x="745" y="552" class="h" text-anchor="middle">FastAPI · :8000</text>
+  <text x="745" y="572" class="s" text-anchor="middle">health · incidents · RCA · upload</text>
+  <text x="745" y="590" class="s" text-anchor="middle">/metrics · /healthz</text>
+
+  <rect class="box out" x="880" y="528" width="210" height="80" rx="8"/>
+  <text x="985" y="552" class="h" text-anchor="middle">Dashboard · :8501</text>
+  <text x="985" y="572" class="s" text-anchor="middle">Streamlit</text>
+  <text x="985" y="590" class="s" text-anchor="middle">timeline · evidence · RCA</text>
+
+  <rect class="box out" x="880" y="634" width="210" height="58" rx="8"/>
+  <text x="985" y="657" class="h" text-anchor="middle">On-call engineer</text>
+  <text x="985" y="677" class="s" text-anchor="middle">reviews · approves fixes</text>
+
+  <path class="ln" d="M560,568 H638"/>
+  <text x="600" y="560" class="xs" text-anchor="middle">results</text>
+  <path class="ln" d="M850,568 H878"/>
+  <path class="ln" d="M985,608 V632"/>
+
+  <!-- Notes -->
+  <line x1="30" y1="712" x2="1090" y2="712" stroke="#e5e7eb"/>
+  <text x="30" y="736" class="s">• Detection, incidents and health never wait for the LLM. If it is down, the rules-based report is shown instead.</text>
+  <text x="30" y="756" class="s">• The LLM sees only the evidence package. It has no tools, cannot change severity, and every evidence ID it cites is checked.</text>
+  <text x="30" y="776" class="s">• Production swaps the parts, not the design: log shippers → Kafka → parser workers, OpenSearch / PostgreSQL / S3, Claude on Bedrock.</text>
+</svg>

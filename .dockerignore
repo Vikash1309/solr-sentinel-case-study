@@ -1,0 +1,14 @@
+# Keep secrets, local state and non-runtime files out of the build context
+.env
+.env.*
+!.env.example
+.git/
+.github/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+data/
+eval/results/
+docs/
+*.md

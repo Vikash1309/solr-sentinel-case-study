@@ -1,0 +1,11 @@
+# Runtime dependencies (ranges). The image installs the exact, hash-pinned versions in requirements.lock.
+# Regenerate the lock after changing this file:
+#   docker run --rm -v "$PWD:/w" -w /w python:3.12-slim sh -c "pip install -q pip-tools && pip-compile --generate-hashes --strip-extras -o requirements.lock requirements.txt"
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2.5
+python-multipart>=0.0.9
+streamlit>=1.50
+pandas>=2.0
+altair>=5.0
+# optional, production LLM on AWS Bedrock: add boto3 here and regenerate the lock

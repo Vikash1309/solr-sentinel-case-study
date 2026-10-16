@@ -1,0 +1,42 @@
+# Reference configuration for the production LLM gateway (LiteLLM proxy).
+# The RCA service only knows two aliases - `rca-strong` and `rca-fast` - and calls the gateway with
+#   LLM_PROVIDER=gateway  LLM_BASE_URL=http://litellm:4000/v1  LLM_API_KEY=<gateway virtual key>
+# Swapping models, adding failover or moving on-prem is a change here, not in the application.
+#
+# Replace the <...> placeholders with the model IDs enabled in the client's AWS account / vLLM deployment.
+# This file is a template: it was not run as part of the prototype.
+
+model_list:
+  # Primary: Claude on AWS Bedrock, in the client's own account and region (data stays in-tenant, no training).
+  - model_name: rca-strong                       # critical / error incidents
+    litellm_params:
+      model: bedrock/<claude-sonnet-model-id>
+      aws_region_name: os.environ/AWS_REGION
+  - model_name: rca-fast                         # warning incidents
+    litellm_params:
+      model: bedrock/<claude-haiku-model-id>
+      aws_region_name: os.environ/AWS_REGION
+
+  # On-prem profile / failover target: open model served by vLLM inside the client network.
+  - model_name: rca-onprem
+    litellm_params:
+      model: openai/<served-model-name>          # e.g. the name passed to `vllm serve`
+      api_base: http://vllm:8000/v1
+      api_key: none
+
+router_settings:
+  num_retries: 2
+  timeout: 90
+  # if the primary is unavailable, degrade to the on-prem model (the app still validates every answer
+  # and falls back to the deterministic RCA if needed)
+  fallbacks:
+    - rca-strong: [rca-onprem]
+    - rca-fast: [rca-onprem]
+
+litellm_settings:
+  # prompt/response/cost tracing for auditability (requires LANGFUSE_* env vars)
+  success_callback: ["langfuse"]
+  failure_callback: ["langfuse"]
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY      # issue per-service virtual keys with budgets from this

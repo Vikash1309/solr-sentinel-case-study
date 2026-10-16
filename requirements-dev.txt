@@ -1,0 +1,8 @@
+# Test and CI tools, never installed in the production image.
+# Constrained by the runtime lock so tests run on exactly the versions production uses. Regenerate with:
+#   docker run --rm -v "$PWD:/w" -w /w python:3.12-slim sh -c "pip install -q pip-tools && pip-compile --generate-hashes --strip-extras --allow-unsafe -o requirements-dev.lock requirements-dev.txt"
+-c requirements.lock
+pytest>=8.0
+httpx>=0.27
+ruff>=0.6
+pip-audit>=2.7

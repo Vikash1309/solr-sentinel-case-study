@@ -1,0 +1,91 @@
+# Local stack for development and testing: API :8000, dashboard :8501.
+#   docker compose up --build -d
+# Production runs the same image on an orchestrator (ECS/Kubernetes) with SENTINEL_ENV=production,
+# secrets from a secrets manager and PostgreSQL/S3 instead of the local volume. See docs/production-readiness.md.
+#
+# Local LLM (development only):
+#   LLM_PROVIDER=ollama LLM_BASE_URL=http://ollama:11434 docker compose --profile local-llm up --build
+#   docker compose exec ollama ollama pull qwen2.5:7b
+
+x-env: &env
+  SENTINEL_ENV: ${SENTINEL_ENV:-development}
+  SENTINEL_LOG_FORMAT: ${SENTINEL_LOG_FORMAT:-text}
+  SENTINEL_CLOCK: ${SENTINEL_CLOCK:-data}
+  SENTINEL_API_KEY: ${SENTINEL_API_KEY:-change-me}
+  SENTINEL_LLM_ALLOWED_MODELS: ${SENTINEL_LLM_ALLOWED_MODELS:-}
+  LLM_PROVIDER: ${LLM_PROVIDER:-auto}
+  LLM_MODEL: ${LLM_MODEL:-}
+  LLM_MODEL_STRONG: ${LLM_MODEL_STRONG:-}
+  LLM_BASE_URL: ${LLM_BASE_URL:-}
+  LLM_API_KEY: ${LLM_API_KEY:-}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  GROQ_API_KEY: ${GROQ_API_KEY:-}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+
+# Least privilege: read-only root filesystem, no Linux capabilities, no privilege escalation.
+x-hardening: &hardening
+  read_only: true
+  tmpfs: ["/tmp:mode=1777", "/home/app:uid=10001,gid=10001,mode=0700"]
+  cap_drop: ["ALL"]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+
+services:
+  api:
+    build: { context: ., target: production }
+    image: solr-sentinel:local
+    <<: *hardening
+    environment: *env
+    ports: ["8000:8000"]
+    volumes: ["sentinel-data:/data"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { cpus: "2", memory: 2g }
+
+  dashboard:
+    image: solr-sentinel:local
+    <<: *hardening
+    command: ["streamlit", "run", "dashboard/app.py", "--server.port", "8501", "--server.address", "0.0.0.0",
+              "--server.headless", "true", "--browser.gatherUsageStats", "false"]
+    environment:
+      SENTINEL_API_URL: http://api:8000
+      SENTINEL_API_KEY: ${SENTINEL_API_KEY:-change-me}
+    ports: ["8501:8501"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+    depends_on:
+      api: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 1g }
+
+  # Tests and evaluation (not part of the running stack):
+  #   docker compose run --rm tools                                    -> test suite
+  #   docker compose run --rm tools python run.py eval --models rules,gemini
+  tools:
+    build: { context: ., target: test }
+    image: solr-sentinel-test:local
+    profiles: ["tools"]
+    environment:
+      <<: *env
+      SENTINEL_DB_PATH: /tmp/sentinel.db
+      SENTINEL_UPLOAD_DIR: /tmp/uploads
+    volumes: ["./docs:/app/docs", "./eval/results:/app/eval/results"]
+
+  ollama:
+    image: ollama/ollama:latest   # development only
+    profiles: ["local-llm"]
+    volumes: ["ollama:/root/.ollama"]
+
+volumes:
+  sentinel-data:
+  ollama:

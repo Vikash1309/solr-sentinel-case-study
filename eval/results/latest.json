@@ -1,0 +1,428 @@
+{
+  "generated_at": "2026-10-16T05:45:20.716360+00:00",
+  "detection": [
+    {
+      "seed": 1,
+      "events": 19078,
+      "signals": 38,
+      "incidents": 4,
+      "recall": 1.0,
+      "missing": [],
+      "precision": 1.0,
+      "false_positives": [],
+      "scenario_checks": {
+        "S1": {
+          "incident": "INC-B2417261",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S2": {
+          "incident": "INC-B0E362A4",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S3": {
+          "incident": "INC-FA0FC7DC",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "recurrence_ok": true,
+          "status_ok": true
+        },
+        "S4": {
+          "incident": "INC-0FA326AD",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "node_state_ok": true
+        }
+      },
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": true,
+      "max_detection_delay_s": 0.0,
+      "cluster_state": "degraded"
+    },
+    {
+      "seed": 2,
+      "events": 19432,
+      "signals": 38,
+      "incidents": 4,
+      "recall": 1.0,
+      "missing": [],
+      "precision": 1.0,
+      "false_positives": [],
+      "scenario_checks": {
+        "S1": {
+          "incident": "INC-B2417261",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S2": {
+          "incident": "INC-B0E362A4",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S3": {
+          "incident": "INC-FA0FC7DC",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "recurrence_ok": true,
+          "status_ok": true
+        },
+        "S4": {
+          "incident": "INC-0FA326AD",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "node_state_ok": true
+        }
+      },
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": true,
+      "max_detection_delay_s": 0.0,
+      "cluster_state": "degraded"
+    },
+    {
+      "seed": 3,
+      "events": 19077,
+      "signals": 38,
+      "incidents": 4,
+      "recall": 1.0,
+      "missing": [],
+      "precision": 1.0,
+      "false_positives": [],
+      "scenario_checks": {
+        "S1": {
+          "incident": "INC-B2417261",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S2": {
+          "incident": "INC-B0E362A4",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S3": {
+          "incident": "INC-FA0FC7DC",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "recurrence_ok": true,
+          "status_ok": true
+        },
+        "S4": {
+          "incident": "INC-0FA326AD",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "node_state_ok": true
+        }
+      },
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": true,
+      "max_detection_delay_s": 0.0,
+      "cluster_state": "degraded"
+    },
+    {
+      "seed": 4,
+      "events": 19300,
+      "signals": 39,
+      "incidents": 4,
+      "recall": 1.0,
+      "missing": [],
+      "precision": 1.0,
+      "false_positives": [],
+      "scenario_checks": {
+        "S1": {
+          "incident": "INC-B2417261",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S2": {
+          "incident": "INC-B0E362A4",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S3": {
+          "incident": "INC-FA0FC7DC",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "recurrence_ok": true,
+          "status_ok": true
+        },
+        "S4": {
+          "incident": "INC-0FA326AD",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "node_state_ok": true
+        }
+      },
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": true,
+      "max_detection_delay_s": 0.0,
+      "cluster_state": "degraded"
+    },
+    {
+      "seed": 5,
+      "events": 19349,
+      "signals": 38,
+      "incidents": 4,
+      "recall": 1.0,
+      "missing": [],
+      "precision": 1.0,
+      "false_positives": [],
+      "scenario_checks": {
+        "S1": {
+          "incident": "INC-B2417261",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S2": {
+          "incident": "INC-B0E362A4",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true
+        },
+        "S3": {
+          "incident": "INC-FA0FC7DC",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "recurrence_ok": true,
+          "status_ok": true
+        },
+        "S4": {
+          "incident": "INC-0FA326AD",
+          "pattern_ok": true,
+          "root_ok": true,
+          "nodes_ok": true,
+          "severity_ok": true,
+          "node_state_ok": true
+        }
+      },
+      "unexpected_incidents": [],
+      "parse_errors": 4,
+      "parse_errors_ok": true,
+      "replay_idempotent": true,
+      "max_detection_delay_s": 0.0,
+      "cluster_state": "degraded"
+    }
+  ],
+  "rca": [
+    {
+      "model": "rules (deterministic)",
+      "n": 4,
+      "llm_answers": 0,
+      "first_try_valid": 0,
+      "fallbacks": null,
+      "root_cause_accuracy": 1.0,
+      "root_cited": 1.0,
+      "root_node_named": 1.0,
+      "severity_kept": 1.0,
+      "unverified_numbers": 0,
+      "avg_latency_s": 0.0,
+      "tokens": "0/0",
+      "per_incident": [
+        {
+          "scenario": "S1",
+          "source": "rules",
+          "reason": "llm_disabled",
+          "first_try_valid": false,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "medium",
+          "latency_s": 0.0,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Commit storm (too-frequent explicit commits). Earliest triggering condition: 'Excessive explicit commits' on solr-node3 at 10:10:00 UTC (59 explicit hard commits/min opening new searchers (threshold 6))."
+        },
+        {
+          "scenario": "S2",
+          "source": "rules",
+          "reason": "llm_disabled",
+          "first_try_valid": false,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "medium",
+          "latency_s": 0.0,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Heap exhaustion \u2192 long GC pause \u2192 ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure."
+        },
+        {
+          "scenario": "S3",
+          "source": "rules",
+          "reason": "llm_disabled",
+          "first_try_valid": false,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "low",
+          "latency_s": 0.0,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+        },
+        {
+          "scenario": "S4",
+          "source": "rules",
+          "reason": "llm_disabled",
+          "first_try_valid": false,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "low",
+          "latency_s": 0.0,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min))."
+        }
+      ]
+    },
+    {
+      "model": "gemini:gemini-3.8-flash",
+      "n": 4,
+      "llm_answers": 3,
+      "first_try_valid": 3,
+      "fallbacks": 1,
+      "root_cause_accuracy": 1.0,
+      "root_cited": 1.0,
+      "root_node_named": 1.0,
+      "severity_kept": 1.0,
+      "unverified_numbers": 0,
+      "avg_latency_s": 22.9,
+      "tokens": "26,971/4,071",
+      "per_incident": [
+        {
+          "scenario": "S1",
+          "source": "llm",
+          "reason": null,
+          "first_try_valid": true,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "high",
+          "latency_s": 23.8,
+          "tokens_in": 3968,
+          "tokens_out": 1297,
+          "hypothesis": "An indexing client issued rapid explicit commits (59/min) opening new searchers on products_shard2_replica_n10, exceeding the maxWarmingSearchers limit (=2), rejecting commits, and invalidating query caches."
+        },
+        {
+          "scenario": "S2",
+          "source": "llm",
+          "reason": null,
+          "first_try_valid": true,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "high",
+          "latency_s": 26.8,
+          "tokens_in": 20592,
+          "tokens_out": 1831,
+          "hypothesis": "Expensive queries (deep paging with large rows and unbounded facet limits) caused excessive humongous allocations directly into the G1 old generation, driving heap occupancy to 99.1% and inducing a stop-the-world Full GC pause of 18234.6 ms that exceeded the 15000 ms ZooKeeper client timeout, resulting in session expiry and replica degradation on solr-node2."
+        },
+        {
+          "scenario": "S3",
+          "source": "rules",
+          "reason": "llm_unavailable",
+          "first_try_valid": false,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "low",
+          "latency_s": 22.3,
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "hypothesis": "Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms)."
+        },
+        {
+          "scenario": "S4",
+          "source": "llm",
+          "reason": null,
+          "first_try_valid": true,
+          "valid": true,
+          "concepts_ok": true,
+          "root_cited": true,
+          "root_node_named": true,
+          "severity_kept": true,
+          "has_diagnostic_first": true,
+          "unverified_numbers": 0,
+          "confidence": "high",
+          "latency_s": 18.9,
+          "tokens_in": 2411,
+          "tokens_out": 943,
+          "hypothesis": "GC log telemetry pipeline failure or collector/shipping process issue on solr-node3 causing stale GC metrics while the Solr process remained operational."
+        }
+      ]
+    }
+  ]
+}
