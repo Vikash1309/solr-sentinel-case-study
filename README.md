@@ -32,12 +32,6 @@ These numbers come from synthetic logs written by the same author as the rules: 
 designed, not accuracy on real clusters. [EVALUATION.md](docs/EVALUATION.md) ends with exactly what it does and
 does not prove.
 
-![Dashboard overview: cluster and node health, open incidents](docs/dashboard-overview.png)
-
-| An incident's timeline and evidence | Its root-cause report |
-|---|---|
-| ![Incident timeline](docs/dashboard-incident-timeline.png) | ![Root-cause report](docs/dashboard-incident-rca.png) |
-
 ## Run it
 
 ### With Docker (recommended)
