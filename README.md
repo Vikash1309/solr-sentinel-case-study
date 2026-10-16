@@ -22,7 +22,7 @@ report is shown instead.
 | Malformed log lines kept for review | 4/4 |
 | Re-reading all logs from scratch | 0 duplicate events or incidents |
 | Root cause named correctly, rules / Gemini | 4/4 / 3 of 3 answered (1 fell back to rules) |
-| Tests | 53 passing, including the production safeguards |
+| Tests | 54 passing, including the production safeguards |
 
 ![Dashboard](docs/dashboard-overview.png)
 
@@ -155,7 +155,7 @@ app/
 dashboard/       Streamlit UI
 scripts/         sample log generator
 eval/            labelled scenarios and results
-tests/           53 tests
+tests/           54 tests
 docs/            design document, architecture diagram and the pages listed above
 deploy/          LiteLLM gateway config for production
 .github/         CI: lint, tests, secret scan, dependency audit, image build and scan
