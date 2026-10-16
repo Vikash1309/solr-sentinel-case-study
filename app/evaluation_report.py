@@ -111,7 +111,8 @@ def _sensitivity(rows: list[dict]) -> list[str]:
 
 def _rca(rca: list[dict], repeats: int) -> list[str]:
     L = ["## 5. Root-cause answers", "",
-         f"The same 4 incidents (seed 42), analysed {repeats} time(s) per LLM provider. The rules row is the baseline.", "",
+         f"The same 4 incidents (seed 42) for every provider; this run asked each LLM {repeats} time(s) per incident, and "
+         "*Answers* shows how many were actually collected. The rules row is the baseline.", "",
          "| Provider | Answers | From LLM | Valid 1st try | Fallbacks | Root-cause accuracy | Root signal cited | Root node named | "
          "Severity kept | Unverified numbers | Consistent across repeats | Avg latency | Tokens in/out |",
          "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -119,6 +120,8 @@ def _rca(rca: list[dict], repeats: int) -> list[str]:
         if "skipped" in r:
             L.append(f"| {r['model']} | skipped: {r['skipped']} |" + " |" * 11)
             continue
+        if r.get("source_run"):   # results carried over from an earlier run are labelled as such
+            r = {**r, "model": f"{r['model']} (run of {r['source_run']})"}
         if r["fallbacks"] and not r["llm_answers"]:   # every call failed: there is nothing to score
             why = ", ".join(f"{k} ×{v}" for k, v in r.get("fallback_reasons", {}).items())
             L.append(f"| {r['model']} | {r['n']} | 0 | – | {r['fallbacks']} ({why}) | no LLM answers to score |" + " |" * 7)
@@ -131,7 +134,9 @@ def _rca(rca: list[dict], repeats: int) -> list[str]:
           "and heap, ZooKeeper). *Consistent across repeats*: incidents where every LLM answer reached the same verdict "
           "on concepts, root signal and root node. A *fallback* is an LLM call that failed (for example a rate limit) and "
           "was replaced by the rules-based report. For an LLM, accuracy and latency count only the answers the LLM "
-          "actually wrote; fallbacks are reported separately, never scored as the LLM's.", "", "### The explanations", ""]
+          "actually wrote; fallbacks are reported separately, never scored as the LLM's.", ""]
+    L += [f"*Note:* {r['source_run_note']}" for r in rca if r.get("source_run_note")]
+    L += ["", "### The explanations", ""]
     for r in rca:
         if r.get("fallbacks") and not r.get("llm_answers"):
             continue   # no LLM explanations to show

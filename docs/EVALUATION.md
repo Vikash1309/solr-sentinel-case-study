@@ -68,14 +68,16 @@ Each detection threshold moved down and up by 25 % (integers by at least one ste
 
 ## 5. Root-cause answers
 
-The same 4 incidents (seed 42), analysed 3 time(s) per LLM provider. The rules row is the baseline.
+The same 4 incidents (seed 42) for every provider; this run asked each LLM 3 time(s) per incident, and *Answers* shows how many were actually collected. The rules row is the baseline.
 
 | Provider | Answers | From LLM | Valid 1st try | Fallbacks | Root-cause accuracy | Root signal cited | Root node named | Severity kept | Unverified numbers | Consistent across repeats | Avg latency | Tokens in/out |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | rules (deterministic) | 4 | 0 | 0 | n/a | 100% | 100% | 100% | 100% | 0 | – | 0.5 s | 0/0 |
-| gemini:gemini-3.8-flash | 12 | 0 | – | 12 (llm_unavailable ×12) | no LLM answers to score | | | | | | | |
+| gemini:gemini-3.8-flash (run of 2026-10-16 05:45 UTC) | 4 | 3 | 3 | 1 | 100% | 100% | 100% | 100% | 0 | – | 23.2 s | 26,971/4,071 |
 
 *Root-cause accuracy*: the explanation names the expected concepts (for example expensive queries, GC and heap, ZooKeeper). *Consistent across repeats*: incidents where every LLM answer reached the same verdict on concepts, root signal and root node. A *fallback* is an LLM call that failed (for example a rate limit) and was replaced by the rules-based report. For an LLM, accuracy and latency count only the answers the LLM actually wrote; fallbacks are reported separately, never scored as the LLM's.
+
+*Note:* the Gemini row comes from the evaluation run of 2026-10-16 05:45 UTC (same seed, incidents and prompt version), re-scored with the current rules. Each incident was analysed once in that run, so consistency across repeats was not measured. Later runs could not reach Gemini because the free-tier quota (20 requests a day) was used up.
 
 ### The explanations
 
@@ -83,6 +85,10 @@ The same 4 incidents (seed 42), analysed 3 time(s) per LLM provider. The rules r
 - **rules (deterministic) / S2** (rules, confidence medium): Heap exhaustion → long GC pause → ZooKeeper session expiry. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:18:02 UTC (348 record(s) between 10:18:02 and 10:41:59 UTC, QTime median 4654 ms / max 7799 ms). Contributing pattern(s): Expensive queries driving heap pressure.
 - **rules (deterministic) / S3** (rules, confidence low): Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms).
 - **rules (deterministic) / S4** (rules, confidence low): Telemetry gap (collector or shipping problem). Earliest triggering condition: 'No gc telemetry' on solr-node3 at 10:46:56 UTC (No gc log records from solr-node3 for 13 min (last at 10:46:56 UTC; threshold 5 min)).
+- **gemini:gemini-3.8-flash / S1** (llm, confidence high): An indexing client issued rapid explicit commits (59/min) opening new searchers on products_shard2_replica_n10, exceeding the maxWarmingSearchers limit (=2), rejecting commits, and invalidating query caches.
+- **gemini:gemini-3.8-flash / S2** (llm, confidence high): Expensive queries (deep paging with large rows and unbounded facet limits) caused excessive humongous allocations directly into the G1 old generation, driving heap occupancy to 99.1% and inducing a stop-the-world Full GC pause of 18234.6 ms that exceeded the 15000 ms ZooKeeper client timeout, resulting in session expiry and replica degradation on solr-node2.
+- **gemini:gemini-3.8-flash / S3** (rules, confidence low): Expensive queries driving heap pressure. Earliest triggering condition: 'Expensive queries (deep paging / unbounded facets)' on solr-node2 at 10:55:02 UTC (71 record(s) between 10:55:02 and 10:59:58 UTC, QTime median 4445 ms / max 7721 ms).
+- **gemini:gemini-3.8-flash / S4** (llm, confidence high): GC log telemetry pipeline failure or collector/shipping process issue on solr-node3 causing stale GC metrics while the Solr process remained operational.
 
 ## 6. Prompt injection
 
